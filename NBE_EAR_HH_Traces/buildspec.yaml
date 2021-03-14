@@ -1,0 +1,17 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - pip install --upgrade pip
+      - pip install -r NBE_EAR_HH_Traces/requirements.txt -t NBE_EAR_HH_Traces
+
+artifacts:
+  base-directory: NBE_EAR_HH_Traces
+  files:
+    - '**/*'
+  type: zip
+
+cache:
+  paths:
+    - /root/.cache/pip

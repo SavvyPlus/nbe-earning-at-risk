@@ -1,0 +1,17 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - pip install --upgrade pip
+      - pip install -r NBE_EarningAtRisk/requirements.txt -t NBE_EarningAtRisk
+
+artifacts:
+  base-directory: NBE_EarningAtRisk
+  files:
+    - '**/*'
+  type: zip
+
+cache:
+  paths:
+    - /root/.cache/pip
