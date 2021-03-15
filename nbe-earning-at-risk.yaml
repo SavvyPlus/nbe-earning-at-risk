@@ -310,7 +310,7 @@ Resources:
         Location: empower-build-cache
         Type: S3
 
-  CodeBuildCreateBucketLambda:
+  CodeBuildCreateBucketNBELambda:
     Type: 'AWS::CodeBuild::Project'
     DependsOn: CloudFormationRole
     Properties:
@@ -320,7 +320,7 @@ Resources:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: 'aws/codebuild/python:3.6.5'
         Type: LINUX_CONTAINER
-      Name: CodeBuildCreateBucketLambda
+      Name: CodeBuildCreateBucketNBELambda
       ServiceRole: !GetAtt
         - CodeBuildRole
         - Arn
@@ -432,18 +432,18 @@ Resources:
                 - Name: SourceCode
               OutputArtifacts:
                 - Name: BuildSendOutputsLambdaOutput
-            - Name: BuildCreateBucketLambda
+            - Name: BuildCreateBucketNBELambda
               ActionTypeId:
                 Category: Build
                 Owner: AWS
                 Provider: CodeBuild
                 Version: 1
               Configuration:
-                ProjectName: !Ref CodeBuildCreateBucketLambda
+                ProjectName: !Ref CodeBuildCreateBucketNBELambda
               InputArtifacts:
                 - Name: SourceCode
               OutputArtifacts:
-                - Name: BuildCreateBucketLambdaOutput
+                - Name: BuildCreateBucketNBELambdaOutput
 
 
         - Name: ProdStage
@@ -462,7 +462,7 @@ Resources:
                 - Name: BuildGetPercentileOutputsLambdaOutput
                 - Name: BuildEARHHTracesLambdaOutput
                 - Name: BuildSendOutputsLambdaOutput
-                - Name: BuildCreateBucketLambdaOutput
+                - Name: BuildCreateBucketNBELambdaOutput
               Configuration:
                 ActionMode: CHANGE_SET_REPLACE
                 RoleArn: !GetAtt [CFNRole, Arn]
@@ -479,7 +479,7 @@ Resources:
                     "GetPercentileK": {"Fn::GetArtifactAtt":["BuildGetPercentileOutputsLambdaOutput", "ObjectKey"]},
                     "EARHHTracesK": {"Fn::GetArtifactAtt":["BuildEARHHTracesLambdaOutput", "ObjectKey"]},
                     "SendOutputsK": {"Fn::GetArtifactAtt":["BuildSendOutputsLambdaOutput", "ObjectKey"]},
-                    "CreateBucketK": {"Fn::GetArtifactAtt":["BuildCreateBucketLambdaOutput", "ObjectKey"]},
+                    "CreateBucketNBEK": {"Fn::GetArtifactAtt":["BuildCreateBucketNBELambdaOutput", "ObjectKey"]},
                     "BucketName": "${BucketName}"
                   }
               RunOrder: '1'

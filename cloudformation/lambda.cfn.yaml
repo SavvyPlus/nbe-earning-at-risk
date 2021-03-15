@@ -21,9 +21,9 @@ Parameters:
   SendOutputsK:
     Type: String
     Description: The key of SendOutputs lambda
-  CreateBucketK:
+  CreateBucketNBEK:
     Type: String
-    Description: The key of CreateBucket lambda
+    Description: The key of CreateBucketNBE lambda
   BucketName:
     Type: String
     Description: Name of the bucket
@@ -208,13 +208,13 @@ Resources:
           BucketName:
             Fn::Sub: ${BucketName}${Name}
 
-  CreateBucketLambda:
+  CreateBucketNBELambda:
     Type: AWS::Lambda::Function
     Properties:
       Code:
         S3Bucket:
           'Fn::ImportValue': 'NBEEarningAtRiskArtifactsBucket'
-        S3Key: !Ref CreateBucketK
+        S3Key: !Ref CreateBucketNBEK
       FunctionName:
         Fn::Sub: ${AWS::StackName}-create-bucket
       Handler: "create_bucket.handler"
