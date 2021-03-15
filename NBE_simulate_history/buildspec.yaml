@@ -1,0 +1,17 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - pip install --upgrade pip
+      - pip install -r NBE_simulate_history/requirements.txt -t NBE_simulate_history
+
+artifacts:
+  base-directory: NBE_simulate_history
+  files:
+    - '**/*'
+  type: zip
+
+cache:
+  paths:
+    - /root/.cache/pip

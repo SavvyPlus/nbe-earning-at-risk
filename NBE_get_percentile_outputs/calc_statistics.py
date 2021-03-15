@@ -3,7 +3,7 @@ import numpy as np
 import boto3
 import json
 from utils import read_pickle_from_s3, write_pickle_to_s3
-from config import project_bucket, results_EAR_simulation_s3_pickle_path, \
+from config import bucket_nbe, results_EAR_simulation_s3_pickle_path, \
     results_EAR_summary_by_simulation_s3_pickle_path, results_EAR_summary_mapping_s3_pickle_path, \
     results_EAR_hh_traces_s3_pickle_path, results_stress_test_by_sim_s3_pickle_path, \
     results_stress_test_summary_by_sim_s3_pickle_path, results_stress_test_summary_mapping_s3_pickle_path, \
@@ -17,10 +17,10 @@ def get_output(run_id, job_id, sim_num):
     df_all_sim = pd.DataFrame()
     for i in range(sim_num):
         if i < 900:
-            df_tmp = read_pickle_from_s3(project_bucket,
+            df_tmp = read_pickle_from_s3(bucket_nbe,
                                          results_EAR_summary_by_simulation_s3_pickle_path.format(run_id, job_id, i))
         else:
-            df_tmp = read_pickle_from_s3(project_bucket,
+            df_tmp = read_pickle_from_s3(bucket_nbe,
                                          results_EAR_summary_by_simulation_s3_pickle_path.format(run_id, job_id,
                                                                                                  900 + (i - 900) * 9))
         df_all_sim = df_all_sim.append(df_tmp)
@@ -45,7 +45,7 @@ def get_output(run_id, job_id, sim_num):
                                                               'SimNo. (based on Total Cost)'])
     mapping_info = df_percentile_update[['TradingRegion', 'WeekEnding',
                                          'Percentile', 'SimNo. (based on Total Cost)']].to_dict(orient='split')['data']
-    write_pickle_to_s3(mapping_info, project_bucket, results_EAR_summary_mapping_s3_pickle_path.format(run_id, job_id))
+    write_pickle_to_s3(mapping_info, bucket_nbe, results_EAR_summary_mapping_s3_pickle_path.format(run_id, job_id))
     print('mapping information saved.')
 
     # output by normal percentiles
@@ -71,7 +71,7 @@ def get_output(run_id, job_id, sim_num):
     csv_buffer = StringIO()
     df_percentile_update.to_csv(csv_buffer)
     s3_resource = boto3.resource('s3')
-    s3_resource.Object(project_bucket,
+    s3_resource.Object(bucket_nbe,
                        results_EAR_normal_percentiles.format(run_id, job_id,
                                                              run_id, job_id)).put(Body=csv_buffer.getvalue())
 
@@ -101,7 +101,7 @@ def get_output(run_id, job_id, sim_num):
     csv_buffer = StringIO()
     df_percentile_pbi.to_csv(csv_buffer)
     s3_resource = boto3.resource('s3')
-    s3_resource.Object(project_bucket,
+    s3_resource.Object(bucket_nbe,
                        results_EAR_PBI_percentiles.format(run_id, job_id,
                                                           run_id, job_id)).put(Body=csv_buffer.getvalue())
 
@@ -137,7 +137,7 @@ def capture_sim_no_for_percentile(original_df, input_df):
 
 
 def get_hh_traces(run_id, job_id):
-    mapping_info = read_pickle_from_s3(project_bucket,
+    mapping_info = read_pickle_from_s3(bucket_nbe,
                                        results_EAR_summary_mapping_s3_pickle_path.format(run_id, job_id))
     df_hh_traces = pd.DataFrame()
     for elem in mapping_info:
@@ -147,7 +147,7 @@ def get_hh_traces(run_id, job_id):
             week_starting = week_ending - timedelta(weeks=1)
             p = elem[2]
             sim_index = int(elem[3])
-            df_sim = read_pickle_from_s3(project_bucket,
+            df_sim = read_pickle_from_s3(bucket_nbe,
                                          results_EAR_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
             df_sim['Date'] = \
                 df_sim['SettlementDateTime'].apply(lambda row: (row.to_pydatetime() - timedelta(minutes=30)).date())
@@ -172,7 +172,7 @@ def get_hh_traces(run_id, job_id):
     df_hh_traces['Spot Run No.'] = run_id
     df_hh_traces['Job No.'] = job_id
     # df_hh_traces.to_csv('HH_Simulation_Traces_{}.csv'.format(run_id))
-    write_pickle_to_s3(df_hh_traces, project_bucket, results_EAR_hh_traces_s3_pickle_path.format(run_id, job_id))
+    write_pickle_to_s3(df_hh_traces, bucket_nbe, results_EAR_hh_traces_s3_pickle_path.format(run_id, job_id))
     # print(mapping_info)
 
 

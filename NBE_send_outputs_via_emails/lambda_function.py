@@ -5,8 +5,6 @@ import time
 
 def lambda_handler(event, context):
     project_bucket = 'nbe-earning-at-risk'
-    # run_id = 10072
-    # job_id = 5004
     run_id = event['run_id']
     job_id = event['job_id']
 

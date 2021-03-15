@@ -3,7 +3,7 @@ import numpy as np
 import boto3
 import json
 from utils import read_pickle_from_s3, write_pickle_to_s3
-from config import project_bucket, results_EAR_simulation_s3_pickle_path, \
+from config import bucket_nbe, results_EAR_simulation_s3_pickle_path, \
     results_EAR_summary_by_simulation_s3_pickle_path, results_EAR_summary_mapping_s3_pickle_path, \
     results_EAR_hh_traces_s3_pickle_path, results_stress_test_by_sim_s3_pickle_path, \
     results_stress_test_summary_by_sim_s3_pickle_path, results_stress_test_summary_mapping_s3_pickle_path, \
@@ -25,7 +25,7 @@ def lambda_handler(event, context):
     # run_id = event['run_id']
     # job_id = event['job_id']
 
-    mapping_info = read_pickle_from_s3(project_bucket,
+    mapping_info = read_pickle_from_s3(bucket_nbe,
                                        results_EAR_summary_mapping_s3_pickle_path.format(run_id, job_id))
     df_hh_traces = pd.DataFrame()
     for elem in mapping_info:
@@ -35,7 +35,7 @@ def lambda_handler(event, context):
             week_starting = week_ending - timedelta(weeks=1)
             p = elem[2]
             sim_index = int(elem[3])
-            df_sim = read_pickle_from_s3(project_bucket,
+            df_sim = read_pickle_from_s3(bucket_nbe,
                                          results_EAR_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
             df_sim['Date'] = \
                 df_sim['SettlementDateTime'].apply(lambda row: (row.to_pydatetime() - timedelta(minutes=30)).date())
@@ -64,7 +64,7 @@ def lambda_handler(event, context):
     csv_buffer = StringIO()
     df_hh_traces.to_csv(csv_buffer)
     s3_resource = boto3.resource('s3')
-    s3_resource.Object(project_bucket,
+    s3_resource.Object(bucket_nbe,
                        results_EAR_hh_traces_s3_pickle_path.format(run_id, job_id, run_id, job_id)).put(
         Body=csv_buffer.getvalue())
 

@@ -1,6 +1,6 @@
 import time
 from datetime import timedelta, date
-from config import project_bucket, deal_capture_input_path, deal_capture_converted_path, \
+from config import bucket_nbe, deal_capture_input_path, deal_capture_converted_path, \
     spot_price_by_sim_parquet_path, meter_data_simulation_s3_pickle_path, results_EAR_simulation_s3_pickle_path, \
     results_EAR_summary_by_simulation_s3_pickle_path
 from utils import write_pickle_to_s3, read_pickle_from_s3
@@ -29,11 +29,11 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     end_date = date(end_year, end_month, end_day)  # excl.
 
     # read deal position data
-    df_all = read_pickle_from_s3(project_bucket, deal_capture_converted_path.format(job_id, date_input))
+    df_all = read_pickle_from_s3(bucket_nbe, deal_capture_converted_path.format(job_id, date_input))
     states = sorted(list(set(df_all['TradingRegion'])))  # states = ['NSW1', 'QLD1', 'SA1', 'VIC1']
 
     # read simulated spot price data
-    df_sp = pd.read_parquet(f"s3://{project_bucket}/{spot_price_by_sim_parquet_path.format(run_id, sim_index)}")
+    df_sp = pd.read_parquet(f"s3://{bucket_nbe}/{spot_price_by_sim_parquet_path.format(run_id, sim_index)}")
     print('Spot price from {} SimNo. {} loaded.'.format(run_id, sim_index))
     df_sp['Date'] = df_sp['Half Hour Starting'].apply(lambda x: x.date())
     df_sp = df_sp[(start_date <= df_sp['Date']) & (df_sp['Date'] < end_date)]
@@ -48,7 +48,7 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     # read simulated customer load data
     load_data = {}
     for state in states:
-        state_load_all = read_pickle_from_s3(project_bucket,
+        state_load_all = read_pickle_from_s3(bucket_nbe,
                                              meter_data_simulation_s3_pickle_path.format(run_id,
                                                                                          sim_index // 9,
                                                                                          'NBE_{}'.format(state[:-1])))
@@ -70,7 +70,7 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
                     'Cap Cfd', 'EAR Cost', 'Cap Premium Cost', 'Total Cost ($)']]
     print('Calculation finished. Uploading... {} SimNo. {}'.format(run_id, sim_index))
     # to keep a copy of half hour resolution raw data.
-    write_pickle_to_s3(df_output, project_bucket,
+    write_pickle_to_s3(df_output, bucket_nbe,
                        results_EAR_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
 
     # weekly summary
@@ -91,7 +91,7 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     df_summarized['SimNo'] = sim_index
     print('Uploading weekly summary... {} SimNo. {}'.format(run_id, sim_index))
     write_pickle_to_s3(df_summarized,
-                       project_bucket,
+                       bucket_nbe,
                        results_EAR_summary_by_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
     end_time = time.time()
     print("Processing time {} SimNo. {} : {} seconds.".format(run_id, sim_index, end_time-start_time))
