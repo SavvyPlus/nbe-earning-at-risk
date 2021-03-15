@@ -347,7 +347,7 @@ def main_process(key_name):
 
 if __name__ == '__main__':
     # key_name = event['Records'][0]['s3']['object']['key']
-    # e.g. key = 'deal_capture_input/DealCapture_SpotRun10072_Job34_2021-02-12_2022-02-19.xlsx'
+    # e.g. key = 'meter_data_input/demand_profile_NBE.xlsx'
     key = 'meter_data_input/demand_profile_NBE.xlsx'
     print(key)
     main_process(key)

@@ -1,10 +1,10 @@
 import boto3
 from botocore.exceptions import ClientError
 import time
+from config import bucket_nbe
 
 
 def lambda_handler(event, context):
-    project_bucket = 'nbe-earning-at-risk'
     run_id = event['run_id']
     job_id = event['job_id']
 
@@ -13,7 +13,7 @@ def lambda_handler(event, context):
     for i in range(retry):
         s3 = boto3.resource('s3')
         files_path = 'Outputs_PBI/{}/{}/'.format(run_id, job_id)  # run_id, job_id
-        bucket = s3.Bucket(project_bucket)
+        bucket = s3.Bucket(bucket_nbe)
         key_lst = []
         for object_summary in bucket.objects.filter(Prefix=files_path):
             key_lst.append(object_summary)

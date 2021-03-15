@@ -2,6 +2,7 @@ import json
 import boto3
 import time
 import os
+from config import bucket_nbe
 
 get_percentile_func_name = os.environ['GetPercentileOutputsFunc']
 
@@ -14,7 +15,6 @@ def lambda_handler(event, context):
 
     retry = 10
     interval = 60
-    project_bucket = 'nbe-earning-at-risk'
     client = boto3.client('lambda')
     s3 = boto3.resource('s3')
 
@@ -22,7 +22,7 @@ def lambda_handler(event, context):
         print(f"Retry {i}:")
         files_path = 'EAR_output_summary_by_sim/{}/{}/'.format(run_id, job_id)  # run_id, job_id
 
-        bucket = s3.Bucket(project_bucket)
+        bucket = s3.Bucket(bucket_nbe)
         key_lst = []
         for object_summary in bucket.objects.filter(Prefix=files_path):
             print(object_summary)
