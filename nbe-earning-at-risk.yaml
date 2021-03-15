@@ -489,29 +489,29 @@ Resources:
               OutputArtifacts:
                 - Name: BuildCreateBucketNBELambdaOutput
             - Name: BuildSimulateHistoryLambda
-                ActionTypeId:
-                  Category: Build
-                  Owner: AWS
-                  Provider: CodeBuild
-                  Version: 1
-                Configuration:
-                  ProjectName: !Ref CodeBuildSimulateHistoryLambda
-                InputArtifacts:
-                  - Name: SourceCode
-                OutputArtifacts:
-                  - Name: BuildSimulateHistoryLambdaOutput
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref CodeBuildSimulateHistoryLambda
+              InputArtifacts:
+                - Name: SourceCode
+              OutputArtifacts:
+                - Name: BuildSimulateHistoryLambdaOutput
             - Name: BuildSimulateCustomerDataLambda
-                ActionTypeId:
-                  Category: Build
-                  Owner: AWS
-                  Provider: CodeBuild
-                  Version: 1
-                Configuration:
-                  ProjectName: !Ref CodeBuildSimulateCustomerDataLambda
-                InputArtifacts:
-                  - Name: SourceCode
-                OutputArtifacts:
-                  - Name: BuildSimulateCustomerDataLambdaOutput
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref CodeBuildSimulateCustomerDataLambda
+              InputArtifacts:
+                - Name: SourceCode
+              OutputArtifacts:
+                - Name: BuildSimulateCustomerDataLambdaOutput
 
 
         - Name: ProdStage
