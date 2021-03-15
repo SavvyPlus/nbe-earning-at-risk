@@ -25,16 +25,7 @@ def lambda_handler(event, context):
     end_year = int(key_name.split('/')[1].split('.')[0].split('_')[4].split('-')[0])
     end_month = int(key_name.split('/')[1].split('.')[0].split('_')[4].split('-')[1])
     end_day = int(key_name.split('/')[1].split('.')[0].split('_')[4].split('-')[2])
-    # job_id = event['job_id']
-    # date_input = event['date_input']
-    # filename = event['filename']
-    # sheet_name = event['sheet_name']
-    # start_year = event['start_year']
-    # start_month = event['start_month']
-    # start_day = event['start_day']
-    # end_year = event['end_year']
-    # end_month = event['end_month']
-    # end_day = event['end_day']
+
     transform_format(job_id,
                      date_input,
                      filename,

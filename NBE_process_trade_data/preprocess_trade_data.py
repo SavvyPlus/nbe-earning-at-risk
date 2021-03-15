@@ -3,7 +3,7 @@ import datetime
 import time
 import pandas as pd
 import io
-from config import project_bucket, deal_capture_input_path, deal_capture_converted_path
+from config import bucket_nbe, deal_capture_input_path, deal_capture_converted_path
 from utils import write_pickle_to_s3
 
 
@@ -34,7 +34,7 @@ def transform_format(job_id, date_input, filename, sheet_name,
     # read deal position data (pre-sorted) from S3 target folder
     object_key = deal_capture_input_path.format(filename)
     s3 = boto3.client('s3')
-    obj = s3.get_object(Bucket=project_bucket, Key=object_key)
+    obj = s3.get_object(Bucket=bucket_nbe, Key=object_key)
     data = obj['Body'].read()
     df_all = pd.read_excel(io.BytesIO(data), sheet_name=sheet_name)
     df_all['SettlementDate'] = df_all['SettlementDate'].apply(lambda x: x.to_pydatetime().date())
@@ -73,7 +73,7 @@ def transform_format(job_id, date_input, filename, sheet_name,
     end = time.time()
     print('{} seconds.'.format(end - start))
     # df_output.to_excel('output/Deal Capture test3.xlsx', index=False)
-    write_pickle_to_s3(df_output, project_bucket, deal_capture_converted_path.format(job_id, date_input))
+    write_pickle_to_s3(df_output, bucket_nbe, deal_capture_converted_path.format(job_id, date_input))
 
 
 if __name__ == "__main__":

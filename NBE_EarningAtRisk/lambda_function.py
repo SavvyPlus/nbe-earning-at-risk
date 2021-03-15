@@ -2,7 +2,7 @@ import boto3
 import pickle
 import datetime
 import time
-from config import project_bucket, deal_capture_input_path, deal_capture_converted_path
+from config import bucket_nbe, deal_capture_input_path, deal_capture_converted_path
 from utils import write_pickle_to_s3, read_pickle_from_s3
 from calcs_ear import load_calculate_summarize
 import pandas as pd

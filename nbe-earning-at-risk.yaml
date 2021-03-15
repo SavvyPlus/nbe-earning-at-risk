@@ -332,6 +332,50 @@ Resources:
         Location: empower-build-cache
         Type: S3
 
+  CodeBuildSimulateHistoryLambda:
+    Type: 'AWS::CodeBuild::Project'
+    DependsOn: CloudFormationRole
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: 'aws/codebuild/python:3.6.5'
+        Type: LINUX_CONTAINER
+      Name: CodeBuildSimulateHistoryLambda
+      ServiceRole: !GetAtt
+        - CodeBuildRole
+        - Arn
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: NBE_simulate_history/buildspec.yaml
+      TimeoutInMinutes: 5
+      Cache:
+        Location: empower-build-cache
+        Type: S3
+
+  CodeBuildSimulateCustomerDataLambda:
+    Type: 'AWS::CodeBuild::Project'
+    DependsOn: CloudFormationRole
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: 'aws/codebuild/python:3.6.5'
+        Type: LINUX_CONTAINER
+      Name: CodeBuildSimulateCustomerDataLambda
+      ServiceRole: !GetAtt
+        - CodeBuildRole
+        - Arn
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: NBE_simulate_customer_data/buildspec.yaml
+      TimeoutInMinutes: 5
+      Cache:
+        Location: empower-build-cache
+        Type: S3
+
   Pipeline:
     Type: 'AWS::CodePipeline::Pipeline'
     Properties:
@@ -444,6 +488,30 @@ Resources:
                 - Name: SourceCode
               OutputArtifacts:
                 - Name: BuildCreateBucketNBELambdaOutput
+            - Name: BuildSimulateHistoryLambda
+                ActionTypeId:
+                  Category: Build
+                  Owner: AWS
+                  Provider: CodeBuild
+                  Version: 1
+                Configuration:
+                  ProjectName: !Ref CodeBuildSimulateHistoryLambda
+                InputArtifacts:
+                  - Name: SourceCode
+                OutputArtifacts:
+                  - Name: BuildSimulateHistoryLambdaOutput
+            - Name: BuildSimulateCustomerDataLambda
+                ActionTypeId:
+                  Category: Build
+                  Owner: AWS
+                  Provider: CodeBuild
+                  Version: 1
+                Configuration:
+                  ProjectName: !Ref CodeBuildSimulateCustomerDataLambda
+                InputArtifacts:
+                  - Name: SourceCode
+                OutputArtifacts:
+                  - Name: BuildSimulateCustomerDataLambdaOutput
 
 
         - Name: ProdStage
@@ -463,6 +531,8 @@ Resources:
                 - Name: BuildEARHHTracesLambdaOutput
                 - Name: BuildSendOutputsLambdaOutput
                 - Name: BuildCreateBucketNBELambdaOutput
+                - Name: BuildSimulateHistoryLambdaOutput
+                - Name: BuildSimulateCustomerDataLambdaOutput
               Configuration:
                 ActionMode: CHANGE_SET_REPLACE
                 RoleArn: !GetAtt [CFNRole, Arn]
@@ -480,6 +550,8 @@ Resources:
                     "EARHHTracesK": {"Fn::GetArtifactAtt":["BuildEARHHTracesLambdaOutput", "ObjectKey"]},
                     "SendOutputsK": {"Fn::GetArtifactAtt":["BuildSendOutputsLambdaOutput", "ObjectKey"]},
                     "CreateBucketNBEK": {"Fn::GetArtifactAtt":["BuildCreateBucketNBELambdaOutput", "ObjectKey"]},
+                    "SimulateHistoryK": {"Fn::GetArtifactAtt":["BuildSimulateHistoryLambdaOutput", "ObjectKey"]},
+                    "SimulateCustomerDataK": {"Fn::GetArtifactAtt":["BuildSimulateCustomerDataLambdaOutput", "ObjectKey"]},
                     "BucketName": "${BucketName}"
                   }
               RunOrder: '1'
