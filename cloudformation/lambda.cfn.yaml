@@ -117,6 +117,7 @@ Resources:
       Timeout: 900
       Layers:
         - arn:aws:lambda:ap-southeast-2:000581985601:layer:pandas_pytz:1
+        - arn:aws:lambda:ap-southeast-2:817496625479:layer:AWSLambda-Python36-SciPy1x:35
       Environment:
         Variables:
           StackName: !Ref AWS::StackName
