@@ -116,7 +116,7 @@ Resources:
       Runtime: python3.6
       Timeout: 900
       Layers:
-        - arn:aws:lambda:ap-southeast-2:000581985601:layer:pyarrow-s3fs-pandas:3
+        - arn:aws:lambda:ap-southeast-2:000581985601:layer:pandas_pytz:1
       Environment:
         Variables:
           StackName: !Ref AWS::StackName
