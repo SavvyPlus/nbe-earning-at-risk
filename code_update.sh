@@ -36,11 +36,13 @@ ln -f dev/config.py NBE_send_outputs_via_emails/config.py
 
 # NBE_simulate_customer_data
 mkdir -p NBE_simulate_customer_data/
+ln -f dev/utils.py NBE_simulate_customer_data/utils.py
 ln -f dev/config.py NBE_simulate_customer_data/config.py
 ln -f dev/simulate_customer_data.py NBE_simulate_customer_data/simulate_customer_data.py
 
 # NBE_simulate_history
 mkdir -p NBE_simulate_history/
+ln -f dev/utils.py NBE_simulate_history/utils.py
 ln -f dev/config.py NBE_simulate_history/config.py
 ln -f dev/simulate_history.py NBE_simulate_history/simulate_history.py
 
