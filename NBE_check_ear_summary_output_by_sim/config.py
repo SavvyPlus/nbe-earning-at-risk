@@ -27,7 +27,7 @@ results_data_simulation_s3_pickle_path = 'results_period_def/{}/{}/{}.pickle'  #
 
 results_EAR_simulation_s3_pickle_path = 'EAR_output_by_sim/{}/{}/{}.pickle'  # run_id, job_id, sim_index
 results_EAR_summary_by_simulation_s3_pickle_path = 'EAR_output_summary_by_sim/{}/{}/{}.pickle'  # run_id, job_id, sim_index
-results_EAR_summary_mapping_s3_pickle_path = 'EAR_output_summary_by_sim/{}/{}/mapping.pickle'  # run_id, job_id
+results_EAR_summary_mapping_s3_pickle_path = 'EAR_statistics/{}/{}/mapping.pickle'  # run_id, job_id
 results_EAR_hh_traces_s3_pickle_path = 'HH_Traces/{}/{}.pickle'  # run_id, job_id
 results_EAR_normal_percentiles = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_normal_percentiles_{}_{}.csv'  # run_id, job_id
 results_EAR_PBI_percentiles = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_PBI_percentiles_{}_{}.csv'  # run_id, job_id
