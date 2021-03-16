@@ -5,7 +5,7 @@ import json
 from utils import read_pickle_from_s3, write_pickle_to_s3
 from config import bucket_nbe, results_EAR_simulation_s3_pickle_path, \
     results_EAR_summary_by_simulation_s3_pickle_path, results_EAR_summary_mapping_s3_pickle_path, \
-    results_EAR_hh_traces_s3_pickle_path
+    results_EAR_hh_traces_s3_pickle_path, results_EAR_normal_percentiles, results_EAR_PBI_percentiles
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
 
