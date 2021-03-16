@@ -4,10 +4,10 @@ phases:
   install:
     commands:
       - pip install --upgrade pip
-      - pip install -r NBE_process_trade_data/requirements.txt -t NBE_process_trade_data
+      - pip install -r NBE_get_percentile_outputs/requirements.txt -t NBE_get_percentile_outputs
 
 artifacts:
-  base-directory: NBE_process_trade_data
+  base-directory: NBE_get_percentile_outputs
   files:
     - '**/*'
   type: zip

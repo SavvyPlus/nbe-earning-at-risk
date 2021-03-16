@@ -4,10 +4,10 @@ phases:
   install:
     commands:
       - pip install --upgrade pip
-      - pip install -r NBE_process_trade_data/requirements.txt -t NBE_process_trade_data
+      - pip install -r NBE_send_outputs_via_emails/requirements.txt -t NBE_send_outputs_via_emails
 
 artifacts:
-  base-directory: NBE_process_trade_data
+  base-directory: NBE_send_outputs_via_emails
   files:
     - '**/*'
   type: zip
