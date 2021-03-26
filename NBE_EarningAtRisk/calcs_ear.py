@@ -62,12 +62,18 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     df_all['Customer Net MWh'] = pd.concat([load_data[state] for state in states], ignore_index=True)
     df_all['Customer Net MWh'] = df_all['Customer Net MWh'].apply(lambda x: -x)
 
+    # add transfer price
+    # SA: $120/MWh, NSW/VIC/QLD: $100/MWh
+    # TODO: transfer prices will change in future months
+    df_all['Transfer Price'] = df_all['TradingRegion'].apply(lambda row: 120 if row == 'SA1' else 100)
+
     # calculate earning at risk and output
     df = calculate_earning_at_risk(df_all)
     df_output = df[['TradingRegion', 'SettlementDateTime', 'Swap Premium', 'Swap Hedged Qty (MWh)',
                     'Swap Weighted Strike Price', 'Cap Premium', 'Cap Hedged Qty (MWh)', 'Cap Weighted Strike Price',
-                    'Spot Price', 'Customer Net MWh', 'Pool Cost', 'Swap Cfd',
-                    'Cap Cfd', 'EAR Cost', 'Cap Premium Cost', 'Total Cost ($)']]
+                    'Spot Price', 'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd',
+                    'Total Cost (excl GST)', 'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                    'Transfer Price', 'Transfer Cost', 'EAR Cost']]
     print('Calculation finished. Uploading... {} SimNo. {}'.format(run_id, sim_index))
     # to keep a copy of half hour resolution raw data.
     write_pickle_to_s3(df_output, bucket_nbe,
@@ -78,12 +84,15 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     df_output['WeekEnding'] = df_output['SettlementDateTime'].apply(get_week_ending)  # get the week ending date
     # sum by region by week ending
     df_summarized = df_output[['TradingRegion', 'WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
-                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'EAR Cost', 'Cap Premium Cost',
-                               'Total Cost ($)']].groupby(['TradingRegion', 'WeekEnding']).sum()
+                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
+                               'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(
+        ['TradingRegion', 'WeekEnding']).sum()
     # all regions' sum by week ending
     df_grandtotal = df_output[['WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
-                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'EAR Cost', 'Cap Premium Cost',
-                               'Total Cost ($)']].groupby(['WeekEnding']).sum()
+                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
+                               'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(['WeekEnding']).sum()
     df_grandtotal.reset_index(inplace=True)
     df_grandtotal.insert(0, 'TradingRegion', 'GrandTotal')
     df_summarized.reset_index(inplace=True)
@@ -94,18 +103,25 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
                        bucket_nbe,
                        results_EAR_summary_by_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
     end_time = time.time()
-    print("Processing time {} SimNo. {} : {} seconds.".format(run_id, sim_index, end_time-start_time))
+    print("Processing time {} SimNo. {} : {} seconds.".format(run_id, sim_index, end_time - start_time))
 
 
 def calculate_earning_at_risk(df):
+    """
+
+    :param df:
+    :return:
+    """
     df['Pool Cost'] = df.apply(lambda row: row['Customer Net MWh'] * row['Spot Price'], axis=1)
     df['Swap Cfd'] = df.apply(
         lambda row: (row['Spot Price'] - row['Swap Weighted Strike Price']) * row['Swap Hedged Qty (MWh)'], axis=1)
     df['Cap Cfd'] = df.apply(
         lambda row: max(row['Spot Price'] - row['Cap Weighted Strike Price'], 0) * row['Cap Hedged Qty (MWh)'], axis=1)
-    df['EAR Cost'] = df.apply(lambda row: row['Pool Cost'] + row['Swap Cfd'] + row['Cap Cfd'], axis=1)
+    df['Total Cost (excl GST)'] = df.apply(lambda row: row['Pool Cost'] + row['Swap Cfd'] + row['Cap Cfd'], axis=1)
     df['Cap Premium Cost'] = df.apply(lambda row: row['Cap Premium'] * row['Customer Net MWh'], axis=1)
-    df['Total Cost ($)'] = df.apply(lambda row: row['EAR Cost'] + row['Cap Premium Cost'], axis=1)
+    df['Total Cost (Incl Cap)'] = df.apply(lambda row: row['EAR Cost'] + row['Cap Premium Cost'], axis=1)
+    df['Transfer Cost'] = df.apply(lambda row: row['Transfer Price'] * row['Customer Net MWh'], axis=1)
+    df['EAR Cost'] = df.apply(lambda row: row['Total Cost (Incl Cap)'] + row['Transfer Cost'])
     return df
 
 
@@ -119,14 +135,14 @@ def get_week_ending(dt):
 
 if __name__ == "__main__":
     run_id = 10072
-    job_id = 34
-    date_input = '2021-02-12'
+    job_id = 37
+    date_input = '2021-03-12'
     start_year = 2021
     start_month = 1
     start_day = 1
     end_year = 2022
-    end_month = 2
-    end_day = 15
+    end_month = 3
+    end_day = 12
     sim_index = 1
     starttime = time.time()
     load_calculate_summarize(run_id,
