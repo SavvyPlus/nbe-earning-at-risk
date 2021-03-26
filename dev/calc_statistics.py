@@ -30,8 +30,9 @@ def get_output(run_id, job_id, sim_num):
     # save the mapping of percentile & sim_index of all percentiles
     percentile_list = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.25, 0.5, 0.75, 0.95, 1]
     df_percentile = df_all_sim[['TradingRegion', 'WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
-                                'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'EAR Cost', 'Cap Premium Cost',
-                                'Total Cost ($)']].groupby(['TradingRegion', 'WeekEnding']).quantile(percentile_list)
+                                'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
+                                'Cap Premium Cost', 'Total Cost (Incl Cap)', 'Transfer Cost', 'EAR Cost']].groupby(
+        ['TradingRegion', 'WeekEnding']).quantile(percentile_list)
     df_percentile.reset_index(inplace=True)
     df_percentile = df_percentile.rename(columns={'level_2': 'Percentile'})
     df_percentile_lst = capture_sim_no_for_percentile(df_all_sim, df_percentile)
@@ -39,18 +40,22 @@ def get_output(run_id, job_id, sim_num):
                                                      columns=['TradingRegion', 'WeekEnding', 'Percentile',
                                                               'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd',
-                                                              'EAR Cost', 'Cap Premium Cost', 'Total Cost ($)',
-                                                              'SimNo. (based on Total Cost)'])
+                                                              'Total Cost (excl GST)',
+                                                              'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                                                              'Transfer Cost', 'EAR Cost',
+                                                              'SimNo. (based on EAR Cost)'])
     mapping_info = df_percentile_update[['TradingRegion', 'WeekEnding',
-                                         'Percentile', 'SimNo. (based on Total Cost)']].to_dict(orient='split')['data']
+                                         'Percentile', 'SimNo. (based on EAR Cost)']].to_dict(orient='split')['data']
     write_pickle_to_s3(mapping_info, bucket_nbe, results_EAR_summary_mapping_s3_pickle_path.format(run_id, job_id))
     print('mapping information saved.')
 
     # output by normal percentiles
     percentile_list = [0, 0.05, 0.25, 0.5, 0.75, 0.95, 1]
     df_percentile = df_all_sim[['TradingRegion', 'WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
-                                'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'EAR Cost', 'Cap Premium Cost',
-                                'Total Cost ($)']].groupby(['TradingRegion', 'WeekEnding']).quantile(percentile_list)
+                                'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
+                                'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                                'Transfer Cost', 'EAR Cost']].groupby(['TradingRegion', 'WeekEnding']).quantile(
+        percentile_list)
     df_percentile.reset_index(inplace=True)
     df_percentile = df_percentile.rename(columns={'level_2': 'Percentile'})
     df_percentile_lst = capture_sim_no_for_percentile(df_all_sim, df_percentile)
@@ -58,12 +63,14 @@ def get_output(run_id, job_id, sim_num):
                                                      columns=['TradingRegion', 'WeekEnding', 'Percentile',
                                                               'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd',
-                                                              'EAR Cost', 'Cap Premium Cost', 'Total Cost ($)',
-                                                              'SimNo. (based on Total Cost)'])
+                                                              'Total Cost (excl GST)',
+                                                              'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                                                              'Transfer Cost', 'EAR Cost',
+                                                              'SimNo. (based on EAR Cost)'])
     df_percentile_update['Spot Run No.'] = run_id
     df_percentile_update['Job No.'] = job_id
-    df_percentile_update['Year'] = df_percentile_update['WeekEnding'].apply(lambda x: x.year)
-    df_percentile_update['Month'] = df_percentile_update['WeekEnding'].apply(lambda x: x.month)
+    # df_percentile_update['Year'] = df_percentile_update['WeekEnding'].apply(lambda x: x.year)
+    # df_percentile_update['Month'] = df_percentile_update['WeekEnding'].apply(lambda x: x.month)
     # df_percentile_update.to_excel('NBE_EAR_Output_by_normal_percentiles_{}_{}.xlsx'.format(run_id, job_id))
     # df_percentile_update.to_csv(results_EAR_normal_percentiles.format(run_id, job_id))
     csv_buffer = StringIO()
@@ -76,10 +83,11 @@ def get_output(run_id, job_id, sim_num):
     # output by percentile for PBI
     percentile_list_risk = [0, 0.01, 0.02, 0.03, 0.05]
     df_percentile_risk = df_all_sim[['TradingRegion', 'WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
-                                     'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'EAR Cost',
-                                     'Cap Premium Cost',
-                                     'Total Cost ($)']].groupby(['TradingRegion',
-                                                                 'WeekEnding']).quantile(percentile_list_risk)
+                                     'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
+                                     'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                                     'Transfer Cost', 'EAR Cost']].groupby(['TradingRegion',
+                                                                            'WeekEnding']).quantile(
+        percentile_list_risk)
     df_percentile_risk.reset_index(inplace=True)
     df_percentile_risk = df_percentile_risk.rename(columns={'level_2': 'Percentile'})
     df_percentile_risk_lst = capture_sim_no_for_percentile(df_all_sim, df_percentile_risk)
@@ -88,12 +96,14 @@ def get_output(run_id, job_id, sim_num):
                                                   columns=['TradingRegion', 'WeekEnding', 'Percentile',
                                                            'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                                            'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd',
-                                                           'EAR Cost', 'Cap Premium Cost', 'Total Cost ($)',
-                                                           'SimNo. (based on Total Cost)'])
+                                                           'Total Cost (excl GST)',
+                                                           'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                                                           'Transfer Cost', 'EAR Cost',
+                                                           'SimNo. (based on EAR Cost)'])
     df_percentile_pbi['Spot Run No.'] = run_id
     df_percentile_pbi['Job No.'] = job_id
-    df_percentile_pbi['Year'] = df_percentile_pbi['WeekEnding'].apply(lambda x: x.year)
-    df_percentile_pbi['Month'] = df_percentile_pbi['WeekEnding'].apply(lambda x: x.month)
+    # df_percentile_pbi['Year'] = df_percentile_pbi['WeekEnding'].apply(lambda x: x.year)
+    # df_percentile_pbi['Month'] = df_percentile_pbi['WeekEnding'].apply(lambda x: x.month)
     # df_percentile_pbi.to_excel('NBE_EAR_Output_by_PBI_percentiles_{}_{}.xlsx'.format(run_id, job_id))
     # df_percentile_pbi.to_csv(results_EAR_PBI_percentiles.format(run_id, job_id))
     csv_buffer = StringIO()
@@ -119,6 +129,12 @@ def duplicate_percentile_for_pbi(input_lst, p_position):
 
 
 def capture_sim_no_for_percentile(original_df, input_df):
+    """
+
+    :param original_df:
+    :param input_df:
+    :return:
+    """
     input_df = input_df.rename(columns={'level_2': 'Percentile'})
     output_lst = input_df.to_dict(orient='split')['data']
     for one_row in output_lst:
@@ -127,8 +143,8 @@ def capture_sim_no_for_percentile(original_df, input_df):
         total_cost = one_row[-1]
         df_tmp = original_df[(original_df['TradingRegion'] == trading_region)
                              & (original_df['WeekEnding'] == week_ending)]
-        target_array = df_tmp[['Total Cost ($)', 'SimNo']].reset_index(drop=True)
-        sim_no_index_this = np.argmin(abs(target_array['Total Cost ($)'] - total_cost))
+        target_array = df_tmp[['EAR Cost', 'SimNo']].reset_index(drop=True)
+        sim_no_index_this = np.argmin(abs(target_array['EAR Cost'] - total_cost))
         sim_no = target_array.loc[sim_no_index_this]['SimNo']
         one_row.append(sim_no)
     return output_lst
@@ -153,7 +169,8 @@ def get_hh_traces(run_id, job_id):
                             & (df_sim['Date'] <= week_ending)][['TradingRegion', 'SettlementDateTime',
                                                                 'Swap Hedged Qty (MWh)',
                                                                 'Cap Hedged Qty (MWh)', 'Customer Net MWh',
-                                                                'Spot Price', 'Total Cost ($)']]
+                                                                'Spot Price', 'Total Cost (excl GST)',
+                                                                'Total Cost (Incl Cap)']]
             df_tmp_grandtotal = df_tmp.groupby(['SettlementDateTime']).sum()
             df_tmp_grandtotal.reset_index(inplace=True)
             df_tmp_grandtotal.insert(0, 'TradingRegion', 'GrandTotal')
@@ -176,11 +193,11 @@ def get_hh_traces(run_id, job_id):
 
 def get_four_week_blocks(d, *args):
     start_week_ending = args[0]
-    week_no = (d-start_week_ending).days / 7
+    week_no = (d - start_week_ending).days / 7
     if week_no == 0:
         return start_week_ending
     else:
-        return start_week_ending + timedelta(days=int(4 * 7 * ((week_no-1)//4+1)))
+        return start_week_ending + timedelta(days=int(4 * 7 * ((week_no - 1) // 4 + 1)))
 
 
 if __name__ == '__main__':
