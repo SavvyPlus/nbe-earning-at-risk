@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     df_hh_traces = pd.DataFrame()
     for elem in mapping_info:
         print(elem)
-        if (elem[0] == 'GrandTotal') & (elem[1] <= datetime(2022, 3, 12).date()):
+        if (elem[0] == 'GrandTotal') & (elem[1] <= datetime(2022, 3, 19).date()):
             week_ending = elem[1]
             week_starting = week_ending - timedelta(weeks=1)
             p = elem[2]
@@ -41,7 +41,8 @@ def lambda_handler(event, context):
                             & (df_sim['Date'] <= week_ending)][['TradingRegion', 'SettlementDateTime',
                                                                 'Swap Hedged Qty (MWh)',
                                                                 'Cap Hedged Qty (MWh)', 'Customer Net MWh',
-                                                                'Spot Price', 'Total Cost ($)']]
+                                                                'Spot Price', 'Total Cost (excl GST)',
+                                                                'Total Cost (Incl Cap)']]
             df_tmp_grandtotal = df_tmp.groupby(['SettlementDateTime']).sum()
             df_tmp_grandtotal.reset_index(inplace=True)
             df_tmp_grandtotal.insert(0, 'TradingRegion', 'GrandTotal')
