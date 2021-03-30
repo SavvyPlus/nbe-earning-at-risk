@@ -7,7 +7,7 @@ weather_stations = {'VIC1': 'MELBOURNE AIRPORT', 'NSW1': 'SYDNEY OLYMPIC PARK (A
                     'SA1': 'ADELAIDE AIRPORT', 'QLD1': 'BRISBANE', 'TAS1': 'HOBART (ELLERSLIE ROAD)'}
 weather_data_path = 'historical-weather/{}.pickle'  # weather station name
 parameters_for_batch_v2 = 'cache/{}/parameters_for_batch_test2.pickle'
-spot_simulation_input_extra_info = 'spot_simulation_input/mapping.xlsx'
+spot_simulation_input_extra_info = 'spot_simulation_input/mapping_{}.xlsx'  # run_id
 
 # configurations for a specific consulting project
 bucket_nbe = 'nbe-earning-at-risk-prod'

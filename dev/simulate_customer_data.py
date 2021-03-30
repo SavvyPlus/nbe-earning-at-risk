@@ -10,7 +10,7 @@ import io
 client = boto3.client('s3')
 project_start_date = datetime.date(2020, 1, 1)
 project_end_date = datetime.date(2023, 12, 31)
-run_id = 10072
+run_id = 50014
 
 
 def simulate_demand_profile(key_name):
@@ -18,7 +18,7 @@ def simulate_demand_profile(key_name):
     distributor = key_name.split('/')[2].split('.')[0]
 
     # get reference day parameters from Spot Simulations
-    object_key = spot_simulation_input_extra_info
+    object_key = spot_simulation_input_extra_info.format(run_id)
     s3 = boto3.client('s3')
     obj = s3.get_object(Bucket=bucket_nbe, Key=object_key)
     data = obj['Body'].read()
