@@ -1,6 +1,6 @@
 # configurations from Spot Price Simulation
 ref_start_date_str = '2017-01-01'
-ref_end_date_str = '2019-07-31'
+ref_end_date_str = '2021-01-31'
 bucket_spot_simulation = 'spot-price-forecast-simulation-prod'
 public_holiday_path = 'public_holiday/{}.pickle'  # state
 weather_stations = {'VIC1': 'MELBOURNE AIRPORT', 'NSW1': 'SYDNEY OLYMPIC PARK (ARCHERY CENTRE)',
