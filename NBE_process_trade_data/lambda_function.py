@@ -4,7 +4,7 @@ import os
 from preprocess_trade_data import transform_format
 
 # TODO
-total_number_simulations = 915
+total_number_simulations = 930
 client = boto3.client('lambda')
 earning_at_risk_func_name = os.environ['EarningAtRiskFunc']
 check_ear_summary_output_func_name = os.environ['CheckEARSummaryOutputFunc']
