@@ -1,6 +1,7 @@
 from scipy.optimize import linprog
 import numpy as np
 import boto3
+import json
 import pickle
 import datetime
 import time
@@ -163,7 +164,7 @@ def lambda_handler(event, context):
     # output_key = f'projects/NextBusinessEnergy/stress_test_output_by_sim/{run_id}/{sim_index}/{target_state}.pickle'
 
     start_date = datetime.date(2021, 1, 1)
-    end_date = datetime.date(2022, 3, 26)  # incl.
+    end_date = datetime.date(2022, 3, 20)  # incl.
 
     # read deal position data
     df_all = read_pickle_from_s3(bucket, deal_capture_key)
@@ -177,6 +178,9 @@ def lambda_handler(event, context):
     obj = s3.get_object(Bucket=bucket, Key=spot_price_key)
     df_sp = pd.read_csv(obj['Body'])
     df_all['Spot Price'] = df_sp[target_state]
+
+    # filter the date range
+    df_all = df_all[(df_all['SettlementDate'] >= start_date) & (df_all['SettlementDate'] < end_date)]
 
     # read simulated customer load data
     df_load = read_pickle_from_s3(bucket,
@@ -208,15 +212,37 @@ def lambda_handler(event, context):
 
 
 if __name__ == "__main__":
-    starttime = time.time()
-    event = {
-        "run_id": "50014",
-        "sim_index": 0,
-        "target_state": 'VIC1',
-        "prod_mode": False,
-        "job_id": 39,
-        "date_input": '2021-03-26'
-    }
-    lambda_handler(event, None)
-    endtime = time.time()
-    print('\nTotal time: %.2f seconds.' % (endtime - starttime))
+    # starttime = time.time()
+    # event = {
+    #     "run_id": "50014",
+    #     "sim_index": 0,
+    #     "target_state": 'VIC1',
+    #     "prod_mode": True,
+    #     "job_id": 39,
+    #     "date_input": '2021-03-26'
+    # }
+    # lambda_handler(event, None)
+    # endtime = time.time()
+    # print('\nTotal time: %.2f seconds.' % (endtime - starttime))
+
+    function_name = 'NBE_stress_test'
+    sim_num = 930
+    client = boto3.client('lambda')
+    for i in range(sim_num):
+        if i >= 900:
+            i = 900 + (i - 900) * 9
+        payload = {
+            "run_id": "50014",
+            "sim_index": i,
+            "target_state": 'QLD1',
+            "prod_mode": True,
+            "job_id": 39,
+            "date_input": '2021-03-26'
+        }
+        client.invoke(
+            FunctionName=function_name,
+            InvocationType='Event',
+            LogType='Tail',
+            Payload=json.dumps(payload),
+        )
+        print(i)

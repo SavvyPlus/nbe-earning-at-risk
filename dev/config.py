@@ -36,3 +36,6 @@ results_EAR_PBI_percentiles = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_PBI_percentil
 results_EAR_hh_traces_s3_pickle_path = 'Outputs_PBI/{}/{}/HH_Simulation_Traces_{}_{}.csv'  # run_id, job_id
 
 results_stress_test_by_sim_s3_pickle_path = 'stress_test_output_by_sim/{}/{}/{}.pickle'  # run_id, sim_index, target_state
+results_stress_test_summary_by_sim_s3_pickle_path = 'stress_test_output_summary_by_sim/{}/{}.pickle'  # run_id, sim_index
+results_stress_test_summary_mapping_s3_pickle_path = 'stress_test_output_summary_by_sim/{}/mapping.pickle'  # run_id
+results_stress_test_hh_traces_s3_pickle_path = 'HH_Traces_StressTest/{}/{}.pickle'  # run_id, region
