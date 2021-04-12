@@ -175,7 +175,7 @@ def calculate_earning_at_risk(df):
     df['Cap Premium Cost'] = df.apply(lambda row: row['Cap Premium'] * row['Customer Net MWh'], axis=1)
     df['Total Cost (Incl Cap)'] = df.apply(lambda row: row['Total Cost (excl GST)'] + row['Cap Premium Cost'], axis=1)
     df['Transfer Cost'] = df.apply(lambda row: row['Transfer Price'] * row['Customer Net MWh'], axis=1)
-    df['EAR Cost'] = df.apply(lambda row: row['Total Cost (Incl Cap)'] + row['Transfer Cost'], axis=1)
+    df['EAR Cost'] = df.apply(lambda row: row['Total Cost (Incl Cap)'] - row['Transfer Cost'], axis=1)
     return df
 
 
