@@ -1,8 +1,10 @@
 import time
 from datetime import timedelta, date
+import calendar
 from config import bucket_nbe, deal_capture_input_path, deal_capture_converted_path, \
     spot_price_by_sim_parquet_path, meter_data_simulation_s3_pickle_path, results_EAR_simulation_s3_pickle_path, \
-    results_EAR_summary_by_simulation_s3_pickle_path
+    results_EAR_summary_by_simulation_s3_pickle_path, results_EAR_mth_summary_by_simulation_s3_pickle_path, \
+    results_EAR_qtr_summary_by_simulation_s3_pickle_path
 from utils import write_pickle_to_s3, read_pickle_from_s3
 import pandas as pd
 
@@ -79,6 +81,7 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     write_pickle_to_s3(df_output, bucket_nbe,
                        results_EAR_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
 
+    # TODO:
     # weekly summary
     print('Summarising the data into weekly resolution... {} SimNo. {}'.format(run_id, sim_index))
     df_output['WeekEnding'] = df_output['SettlementDateTime'].apply(get_week_ending)  # get the week ending date
@@ -102,6 +105,57 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     write_pickle_to_s3(df_summarized,
                        bucket_nbe,
                        results_EAR_summary_by_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
+
+    # TODO
+    # monthly summary
+    df_output = read_pickle_from_s3(bucket_nbe, results_EAR_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
+    df_output['MonthEnding'] = df_output['SettlementDateTime'].apply(get_month_ending)  # get the month ending date
+    # sum by region by week ending
+    df_summarized = df_output[['TradingRegion', 'MonthEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
+                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
+                               'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(
+        ['TradingRegion', 'MonthEnding']).sum()
+    # all regions' sum by month ending
+    df_grandtotal = df_output[['MonthEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
+                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
+                               'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(['MonthEnding']).sum()
+    df_grandtotal.reset_index(inplace=True)
+    df_grandtotal.insert(0, 'TradingRegion', 'GrandTotal')
+    df_summarized.reset_index(inplace=True)
+    df_summarized = df_summarized.append(df_grandtotal).reset_index(drop=True)
+    df_summarized['SimNo'] = sim_index
+    print('Uploading monthly summary... {} SimNo. {}'.format(run_id, sim_index))
+    write_pickle_to_s3(df_summarized,
+                       bucket_nbe,
+                       results_EAR_mth_summary_by_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
+
+    # TODO
+    # quarterly summary
+    df_output = read_pickle_from_s3(bucket_nbe, results_EAR_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
+    df_output['QuarterEnding'] = df_output['SettlementDateTime'].apply(get_quarter_ending)  # get the qtr ending date
+    # sum by region by week ending
+    df_summarized = df_output[['TradingRegion', 'QuarterEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
+                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
+                               'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(
+        ['TradingRegion', 'QuarterEnding']).sum()
+    # all regions' sum by month ending
+    df_grandtotal = df_output[['QuarterEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
+                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
+                               'Cap Premium Cost', 'Total Cost (Incl Cap)',
+                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(['QuarterEnding']).sum()
+    df_grandtotal.reset_index(inplace=True)
+    df_grandtotal.insert(0, 'TradingRegion', 'GrandTotal')
+    df_summarized.reset_index(inplace=True)
+    df_summarized = df_summarized.append(df_grandtotal).reset_index(drop=True)
+    df_summarized['SimNo'] = sim_index
+    print('Uploading quarterly summary... {} SimNo. {}'.format(run_id, sim_index))
+    write_pickle_to_s3(df_summarized,
+                       bucket_nbe,
+                       results_EAR_qtr_summary_by_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
+
     end_time = time.time()
     print("Processing time {} SimNo. {} : {} seconds.".format(run_id, sim_index, end_time - start_time))
 
@@ -133,16 +187,37 @@ def get_week_ending(dt):
     return week_ending_date
 
 
+def get_month_ending(dt):
+    d = (dt - timedelta(minutes=30)).to_pydatetime()  # to get hh starting
+    last_day = calendar.monthrange(d.year, d.month)[1]
+    month_ending_date = date(d.year, d.month, last_day)
+    return month_ending_date
+
+
+def get_quarter_ending(dt):
+    d = (dt - timedelta(minutes=30)).to_pydatetime()  # to get hh starting
+    # In Australia, Q1: Jan, Feb, Mar, Q2: Apr, May, Jun, Q3: Jul, Aug, Sep, Q4: Oct, Nov, Dec
+    if dt.month in (1, 2, 3):
+        qtr_ending_date = date(d.year, 3, 31)
+    elif dt.month in (4, 5, 6):
+        qtr_ending_date = date(d.year, 6, 30)
+    elif dt.month in (7, 8, 9):
+        qtr_ending_date = date(d.year, 9, 30)
+    elif dt.month in (10, 11, 12):
+        qtr_ending_date = date(d.year, 12, 31)
+    return qtr_ending_date
+
+
 if __name__ == "__main__":
-    run_id = 10072
-    job_id = 37
-    date_input = '2021-03-12'
+    run_id = 50014
+    job_id = 39
+    date_input = '2021-03-26'
     start_year = 2021
     start_month = 1
     start_day = 1
     end_year = 2022
     end_month = 3
-    end_day = 12
+    end_day = 26
     sim_index = 1
     starttime = time.time()
     load_calculate_summarize(run_id,

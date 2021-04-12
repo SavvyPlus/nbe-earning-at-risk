@@ -109,10 +109,11 @@ def get_output_stress_test(run_id, sim_num):
 
     new_output = duplicate_percentile_for_pbi_stress_test(df_percentile_lst, p_position=2)
     df_percentile_pbi = pd.DataFrame.from_records(new_output,
-                                                  columns=['TradingRegion', 'FourWeekBlocks', 'Percentile',
+                                                  columns=['TradingRegion', 'FourWeeksBlocks_WeekEnding', 'Percentile',
                                                            'Adjusted EAR Cost',
                                                            'SimNo. (based on Total Cost)'])
     df_percentile_pbi['Spot Run No.'] = run_id
+    df_percentile_pbi['Job No.'] = job_id
     df_percentile_pbi.to_excel('NBE_StressTest_Output_by_PBI_percentiles_{}.xlsx'.format(run_id))
 
 

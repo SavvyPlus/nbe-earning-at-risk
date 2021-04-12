@@ -36,8 +36,11 @@ def demand_envelop(run_id):
     df_avg = df_avg.drop(columns=['avg_mwh'])
 
     df = df_max.append([df_min, df_avg])
+    df['Spot Run No.'] = run_id
+    df['Job No.'] = job_id
     df.to_excel('demand_envelope_{}.xlsx'.format(run_id))
 
 
 if __name__ == '__main__':
+    job_id = 39
     demand_envelop(run_id=50014)
