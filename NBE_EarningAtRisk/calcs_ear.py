@@ -69,13 +69,13 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     # TODO: transfer prices will change in future months
     df_all['Transfer Price'] = df_all['TradingRegion'].apply(lambda row: 120 if row == 'SA1' else 100)
 
-    # calculate earning at risk and output
-    df = calculate_earning_at_risk(df_all)
+    # calculate the wholesale margin and output
+    df = calculate_wholesale_margin(df_all)
     df_output = df[['TradingRegion', 'SettlementDateTime', 'Swap Premium', 'Swap Hedged Qty (MWh)',
                     'Swap Weighted Strike Price', 'Cap Premium', 'Cap Hedged Qty (MWh)', 'Cap Weighted Strike Price',
                     'Spot Price', 'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd',
                     'Total Cost (excl GST)', 'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                    'Transfer Price', 'Transfer Cost', 'EAR Cost']]
+                    'Transfer Price', 'Transfer Cost', 'Wholesale Margin']]
     print('Calculation finished. Uploading... {} SimNo. {}'.format(run_id, sim_index))
     # to keep a copy of half hour resolution raw data.
     write_pickle_to_s3(df_output, bucket_nbe,
@@ -89,13 +89,13 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     df_summarized = df_output[['TradingRegion', 'WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
                                'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(
+                               'Transfer Price', 'Transfer Cost', 'Wholesale Margin']].groupby(
         ['TradingRegion', 'WeekEnding']).sum()
     # all regions' sum by week ending
     df_grandtotal = df_output[['WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
                                'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(['WeekEnding']).sum()
+                               'Transfer Price', 'Transfer Cost', 'Wholesale Margin']].groupby(['WeekEnding']).sum()
     df_grandtotal.reset_index(inplace=True)
     df_grandtotal.insert(0, 'TradingRegion', 'GrandTotal')
     df_summarized.reset_index(inplace=True)
@@ -114,13 +114,13 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     df_summarized = df_output[['TradingRegion', 'MonthEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
                                'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(
+                               'Transfer Price', 'Transfer Cost', 'Wholesale Margin']].groupby(
         ['TradingRegion', 'MonthEnding']).sum()
     # all regions' sum by month ending
     df_grandtotal = df_output[['MonthEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
                                'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(['MonthEnding']).sum()
+                               'Transfer Price', 'Transfer Cost', 'Wholesale Margin']].groupby(['MonthEnding']).sum()
     df_grandtotal.reset_index(inplace=True)
     df_grandtotal.insert(0, 'TradingRegion', 'GrandTotal')
     df_summarized.reset_index(inplace=True)
@@ -139,13 +139,13 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     df_summarized = df_output[['TradingRegion', 'QuarterEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
                                'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(
+                               'Transfer Price', 'Transfer Cost', 'Wholesale Margin']].groupby(
         ['TradingRegion', 'QuarterEnding']).sum()
     # all regions' sum by month ending
     df_grandtotal = df_output[['QuarterEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
                                'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                               'Transfer Price', 'Transfer Cost', 'EAR Cost']].groupby(['QuarterEnding']).sum()
+                               'Transfer Price', 'Transfer Cost', 'Wholesale Margin']].groupby(['QuarterEnding']).sum()
     df_grandtotal.reset_index(inplace=True)
     df_grandtotal.insert(0, 'TradingRegion', 'GrandTotal')
     df_summarized.reset_index(inplace=True)
@@ -160,7 +160,7 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     print("Processing time {} SimNo. {} : {} seconds.".format(run_id, sim_index, end_time - start_time))
 
 
-def calculate_earning_at_risk(df):
+def calculate_wholesale_margin(df):
     """
 
     :param df:
@@ -175,7 +175,7 @@ def calculate_earning_at_risk(df):
     df['Cap Premium Cost'] = df.apply(lambda row: row['Cap Premium'] * row['Customer Net MWh'], axis=1)
     df['Total Cost (Incl Cap)'] = df.apply(lambda row: row['Total Cost (excl GST)'] + row['Cap Premium Cost'], axis=1)
     df['Transfer Cost'] = df.apply(lambda row: row['Transfer Price'] * row['Customer Net MWh'], axis=1)
-    df['EAR Cost'] = df.apply(lambda row: row['Total Cost (Incl Cap)'] - row['Transfer Cost'], axis=1)
+    df['Wholesale Margin'] = df.apply(lambda row: row['Total Cost (Incl Cap)'] - row['Transfer Cost'], axis=1)
     return df
 
 

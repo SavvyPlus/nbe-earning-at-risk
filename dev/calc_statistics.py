@@ -5,7 +5,9 @@ import json
 from utils import read_pickle_from_s3, write_pickle_to_s3
 from config import bucket_nbe, results_EAR_simulation_s3_pickle_path, \
     results_EAR_summary_by_simulation_s3_pickle_path, results_EAR_summary_mapping_s3_pickle_path, \
-    results_EAR_hh_traces_s3_pickle_path, results_EAR_normal_percentiles, results_EAR_PBI_percentiles
+    results_EAR_hh_traces_s3_pickle_path, results_EAR_normal_percentiles, results_EAR_PBI_percentiles, \
+    results_EAR_mth_summary_by_simulation_s3_pickle_path, results_EAR_qtr_summary_by_simulation_s3_pickle_path, \
+    results_by_sim_by_week, results_by_sim_by_month, results_by_sim_by_quarter
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
 
@@ -23,16 +25,71 @@ def get_output(run_id, job_id, sim_num):
                                                                                                  900 + (i - 900) * 9))
         df_all_sim = df_all_sim.append(df_tmp)
         print(i)
-    # # output by simulation
-    # df_all_sim['Spot Run No.'] = run_id
-    # df_all_sim.to_excel('NBE_EAR_Output_by_simulations_{}.xlsx'.format(run_id))
+    # output by simulation
+    df_all_sim['Spot Run No.'] = run_id
+    df_all_sim['Job No.'] = job_id
+    df_all_sim['Year'] = df_all_sim['WeekEnding'].apply(lambda x: x.year)
+    df_all_sim['Month'] = df_all_sim['WeekEnding'].apply(lambda x: x.month)
+    # df_all_sim.to_excel('NBE_EAR_Output_by_simulations_by_week_{}.xlsx'.format(run_id))
+    # df_all_sim.to_csv('NBE_EAR_Output_by_simulations_by_week_{}_{}.csv'.format(run_id, job_id))
+    csv_buffer = StringIO()
+    df_all_sim.to_csv(csv_buffer)
+    s3_resource = boto3.resource('s3')
+    s3_resource.Object(bucket_nbe,
+                       results_by_sim_by_week.format(run_id, job_id, run_id, job_id)).put(Body=csv_buffer.getvalue())
+    # monthly
+    print("loading data of all simulations by month.")
+    df_all_sim_month = pd.DataFrame()
+    for i in range(sim_num):
+        if i < 900:
+            df_tmp = read_pickle_from_s3(bucket_nbe,
+                                         results_EAR_mth_summary_by_simulation_s3_pickle_path.format(run_id, job_id, i))
+        else:
+            df_tmp = read_pickle_from_s3(bucket_nbe,
+                                         results_EAR_mth_summary_by_simulation_s3_pickle_path.format(run_id,
+                                                                                                     job_id,
+                                                                                                     900+(i - 900) * 9))
+        df_all_sim_month = df_all_sim_month.append(df_tmp)
+        print(i)
+    # output by simulation
+    df_all_sim_month['Spot Run No.'] = run_id
+    df_all_sim_month['Job No.'] = job_id
+    # df_all_sim_month.to_excel('NBE_EAR_Output_by_simulations_by_month_{}.xlsx'.format(run_id))
+    csv_buffer = StringIO()
+    df_all_sim_month.to_csv(csv_buffer)
+    s3_resource = boto3.resource('s3')
+    s3_resource.Object(bucket_nbe,
+                       results_by_sim_by_month.format(run_id, job_id, run_id, job_id)).put(Body=csv_buffer.getvalue())
+    # quarterly
+    print("loading data of all simulations by quarter.")
+    df_all_sim_qtr = pd.DataFrame()
+    for i in range(sim_num):
+        if i < 900:
+            df_tmp = read_pickle_from_s3(bucket_nbe,
+                                         results_EAR_qtr_summary_by_simulation_s3_pickle_path.format(run_id, job_id, i))
+        else:
+            df_tmp = read_pickle_from_s3(bucket_nbe,
+                                         results_EAR_qtr_summary_by_simulation_s3_pickle_path.format(run_id,
+                                                                                                     job_id,
+                                                                                                     900+(i - 900) * 9))
+        df_all_sim_qtr = df_all_sim_qtr.append(df_tmp)
+        print(i)
+    # output by simulation
+    df_all_sim_qtr['Spot Run No.'] = run_id
+    df_all_sim_qtr['Job No.'] = job_id
+    # df_all_sim_qtr.to_excel('NBE_EAR_Output_by_simulations_by_quarter_{}.xlsx'.format(run_id))
+    csv_buffer = StringIO()
+    df_all_sim_qtr.to_csv(csv_buffer)
+    s3_resource = boto3.resource('s3')
+    s3_resource.Object(bucket_nbe,
+                       results_by_sim_by_quarter.format(run_id, job_id, run_id, job_id)).put(Body=csv_buffer.getvalue())
 
     # save the mapping of percentile & sim_index of all percentiles
     percentile_list = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.25, 0.5, 0.75, 0.95, 1]
     df_percentile = df_all_sim[['TradingRegion', 'WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                 'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
-                                'Cap Premium Cost', 'Total Cost (Incl Cap)', 'Transfer Cost', 'EAR Cost']].groupby(
-        ['TradingRegion', 'WeekEnding']).quantile(percentile_list)
+                                'Cap Premium Cost', 'Total Cost (Incl Cap)', 'Transfer Cost',
+                                'Wholesale Margin']].groupby(['TradingRegion', 'WeekEnding']).quantile(percentile_list)
     df_percentile.reset_index(inplace=True)
     df_percentile = df_percentile.rename(columns={'level_2': 'Percentile'})
     df_percentile_lst = capture_sim_no_for_percentile(df_all_sim, df_percentile)
@@ -42,10 +99,11 @@ def get_output(run_id, job_id, sim_num):
                                                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd',
                                                               'Total Cost (excl GST)',
                                                               'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                                                              'Transfer Cost', 'EAR Cost',
-                                                              'SimNo. (based on EAR Cost)'])
+                                                              'Transfer Cost', 'Wholesale Margin',
+                                                              'SimNo. (based on Wholesale Margin)'])
     mapping_info = df_percentile_update[['TradingRegion', 'WeekEnding',
-                                         'Percentile', 'SimNo. (based on EAR Cost)']].to_dict(orient='split')['data']
+                                         'Percentile', 'SimNo. (based on Wholesale Margin)']].to_dict(orient='split')[
+        'data']
     write_pickle_to_s3(mapping_info, bucket_nbe, results_EAR_summary_mapping_s3_pickle_path.format(run_id, job_id))
     print('mapping information saved.')
 
@@ -54,7 +112,7 @@ def get_output(run_id, job_id, sim_num):
     df_percentile = df_all_sim[['TradingRegion', 'WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                 'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
                                 'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                                'Transfer Cost', 'EAR Cost']].groupby(['TradingRegion', 'WeekEnding']).quantile(
+                                'Transfer Cost', 'Wholesale Margin']].groupby(['TradingRegion', 'WeekEnding']).quantile(
         percentile_list)
     df_percentile.reset_index(inplace=True)
     df_percentile = df_percentile.rename(columns={'level_2': 'Percentile'})
@@ -65,8 +123,8 @@ def get_output(run_id, job_id, sim_num):
                                                               'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd',
                                                               'Total Cost (excl GST)',
                                                               'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                                                              'Transfer Cost', 'EAR Cost',
-                                                              'SimNo. (based on EAR Cost)'])
+                                                              'Transfer Cost', 'Wholesale Margin',
+                                                              'SimNo. (based on Wholesale Margin)'])
     df_percentile_update['Spot Run No.'] = run_id
     df_percentile_update['Job No.'] = job_id
     # df_percentile_update['Year'] = df_percentile_update['WeekEnding'].apply(lambda x: x.year)
@@ -85,8 +143,8 @@ def get_output(run_id, job_id, sim_num):
     df_percentile_risk = df_all_sim[['TradingRegion', 'WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                      'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
                                      'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                                     'Transfer Cost', 'EAR Cost']].groupby(['TradingRegion',
-                                                                            'WeekEnding']).quantile(
+                                     'Transfer Cost', 'Wholesale Margin']].groupby(['TradingRegion',
+                                                                                    'WeekEnding']).quantile(
         percentile_list_risk)
     df_percentile_risk.reset_index(inplace=True)
     df_percentile_risk = df_percentile_risk.rename(columns={'level_2': 'Percentile'})
@@ -98,8 +156,8 @@ def get_output(run_id, job_id, sim_num):
                                                            'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd',
                                                            'Total Cost (excl GST)',
                                                            'Cap Premium Cost', 'Total Cost (Incl Cap)',
-                                                           'Transfer Cost', 'EAR Cost',
-                                                           'SimNo. (based on EAR Cost)'])
+                                                           'Transfer Cost', 'Wholesale Margin',
+                                                           'SimNo. (based on Wholesale Margin)'])
     df_percentile_pbi['Spot Run No.'] = run_id
     df_percentile_pbi['Job No.'] = job_id
     # df_percentile_pbi['Year'] = df_percentile_pbi['WeekEnding'].apply(lambda x: x.year)
@@ -143,8 +201,8 @@ def capture_sim_no_for_percentile(original_df, input_df):
         total_cost = one_row[-1]
         df_tmp = original_df[(original_df['TradingRegion'] == trading_region)
                              & (original_df['WeekEnding'] == week_ending)]
-        target_array = df_tmp[['EAR Cost', 'SimNo']].reset_index(drop=True)
-        sim_no_index_this = np.argmin(abs(target_array['EAR Cost'] - total_cost))
+        target_array = df_tmp[['Wholesale Margin', 'SimNo']].reset_index(drop=True)
+        sim_no_index_this = np.argmin(abs(target_array['Wholesale Margin'] - total_cost))
         sim_no = target_array.loc[sim_no_index_this]['SimNo']
         one_row.append(sim_no)
     return output_lst
@@ -201,7 +259,7 @@ def get_four_week_blocks(d, *args):
 
 
 if __name__ == '__main__':
-    runid = 10072
-    job_id = 5004
-    get_output(runid, job_id, 915)
+    runid = 50014
+    job_id = 40
+    get_output(runid, job_id, 930)
     # get_hh_traces(runid, job_id)

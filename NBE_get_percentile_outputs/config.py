@@ -36,6 +36,9 @@ results_EAR_summary_mapping_s3_pickle_path = 'EAR_statistics/{}/{}/mapping.pickl
 results_EAR_normal_percentiles = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_normal_percentiles_{}_{}.csv'  # run_id, job_id
 results_EAR_PBI_percentiles = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_PBI_percentiles_{}_{}.csv'  # run_id, job_id
 results_EAR_hh_traces_s3_pickle_path = 'Outputs_PBI/{}/{}/HH_Simulation_Traces_{}_{}.csv'  # run_id, job_id
+results_by_sim_by_week = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_simulations_by_week_{}_{}.csv'  # run_id, job_id
+results_by_sim_by_month = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_simulations_by_month_{}_{}.csv'  # run_id, job_id
+results_by_sim_by_quarter = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_simulations_by_quarter_{}_{}.csv'  # run_id, job_id
 
 results_stress_test_by_sim_s3_pickle_path = 'stress_test_output_by_sim/{}/{}/{}.pickle'  # run_id, sim_index, target_state
 results_stress_test_summary_by_sim_s3_pickle_path = 'stress_test_output_summary_by_sim/{}/{}.pickle'  # run_id, sim_index
