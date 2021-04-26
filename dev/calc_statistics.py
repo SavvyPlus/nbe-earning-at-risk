@@ -4,7 +4,7 @@ import boto3
 import json
 from utils import read_pickle_from_s3, write_pickle_to_s3
 from config import bucket_nbe, results_EAR_simulation_s3_pickle_path, \
-    results_EAR_summary_by_simulation_s3_pickle_path, results_EAR_summary_mapping_s3_pickle_path, \
+    results_EAR_week_summary_by_simulation_s3_pickle_path, results_EAR_summary_mapping_s3_pickle_path, \
     results_EAR_hh_traces_s3_pickle_path, results_EAR_normal_percentiles, results_EAR_PBI_percentiles, \
     results_EAR_mth_summary_by_simulation_s3_pickle_path, results_EAR_qtr_summary_by_simulation_s3_pickle_path, \
     results_by_sim_by_week, results_by_sim_by_month, results_by_sim_by_quarter
@@ -18,22 +18,25 @@ def get_output(run_id, job_id, sim_num):
     for i in range(sim_num):
         if i < 900:
             df_tmp = read_pickle_from_s3(bucket_nbe,
-                                         results_EAR_summary_by_simulation_s3_pickle_path.format(run_id, job_id, i))
+                                         results_EAR_week_summary_by_simulation_s3_pickle_path.format(run_id, job_id, i))
         else:
             df_tmp = read_pickle_from_s3(bucket_nbe,
-                                         results_EAR_summary_by_simulation_s3_pickle_path.format(run_id, job_id,
+                                         results_EAR_week_summary_by_simulation_s3_pickle_path.format(run_id, job_id,
                                                                                                  900 + (i - 900) * 9))
         df_all_sim = df_all_sim.append(df_tmp)
         print(i)
     # output by simulation
     df_all_sim['Spot Run No.'] = run_id
     df_all_sim['Job No.'] = job_id
-    df_all_sim['Year'] = df_all_sim['WeekEnding'].apply(lambda x: x.year)
-    df_all_sim['Month'] = df_all_sim['WeekEnding'].apply(lambda x: x.month)
+    df_all_sim.reset_index(inplace=True)
+    df_all_sim = df_all_sim.rename(columns={'index': 'CaseNo'})
+    df_all_sim_week = df_all_sim[
+        ['CaseNo', 'TradingRegion', 'WeekEnding', 'Total Cost (Incl Cap)', 'Transfer Cost', 'Wholesale Margin', 'SimNo',
+         'Spot Run No.', 'Job No.']]
     # df_all_sim.to_excel('NBE_EAR_Output_by_simulations_by_week_{}.xlsx'.format(run_id))
     # df_all_sim.to_csv('NBE_EAR_Output_by_simulations_by_week_{}_{}.csv'.format(run_id, job_id))
     csv_buffer = StringIO()
-    df_all_sim.to_csv(csv_buffer)
+    df_all_sim_week.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
                        results_by_sim_by_week.format(run_id, job_id, run_id, job_id)).put(Body=csv_buffer.getvalue())

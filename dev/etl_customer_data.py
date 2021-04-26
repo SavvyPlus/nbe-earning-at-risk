@@ -62,7 +62,7 @@ def pickle2parquet(run_id, sim_index):
 if __name__ == '__main__':
     # pickle2parquet(run_id=50014, sim_index=114)
     client = boto3.client('lambda')
-    for i in range(930):
+    for i in range(900):
         function_name = 'NBE_customer_data_partition'
         payload = {'run_id': 50014,
                    'sim_index': i}

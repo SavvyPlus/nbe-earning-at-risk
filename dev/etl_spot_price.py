@@ -71,7 +71,7 @@ if __name__ == "__main__":
     import json
 
     client = boto3.client('lambda')
-    sim_no = 930
+    sim_no = 900
     for sim_index in range(sim_no):
         if sim_index >= 900:
             sim_index = 900 + (sim_index - 900) * 9
