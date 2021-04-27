@@ -1,3 +1,4 @@
+# TODO: some information is hardcoded, e.g. run_id, sim_ref parameters range, etc.
 import time
 import boto3
 from utils import read_pickle_from_s3, write_pickle_to_s3

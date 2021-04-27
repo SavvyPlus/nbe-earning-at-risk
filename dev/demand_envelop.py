@@ -1,3 +1,12 @@
+'''
+SELECT region, year, month, daytype, periodid, min("customer net mwh") as "min_mwh"
+FROM "dex_poc"."nbe_customer_data_50015"
+WHERE year between '2021' and '2022'
+GROUP BY periodid, daytype, month, year, region
+ORDER BY region, year, month, daytype, periodid
+
+
+'''
 import pandas as pd
 
 
@@ -42,5 +51,5 @@ def demand_envelop(run_id):
 
 
 if __name__ == '__main__':
-    job_id = 39
-    demand_envelop(run_id=50014)
+    job_id = 41
+    demand_envelop(run_id=50015)

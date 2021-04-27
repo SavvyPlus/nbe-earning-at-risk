@@ -1,3 +1,4 @@
+# TODO: needs to think about the meter data source and input data structure
 from utils import read_pickle_from_s3, write_pickle_to_s3
 from config import ref_start_date_str, ref_end_date_str, bucket_spot_simulation, public_holiday_path, \
     weather_stations, meter_data_file_path, meter_data_pickle_path, bucket_nbe, weather_data_path

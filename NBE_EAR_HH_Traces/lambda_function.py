@@ -1,3 +1,4 @@
+# TODO the end date is hardcoded.
 import pandas as pd
 import numpy as np
 import boto3
@@ -27,7 +28,7 @@ def lambda_handler(event, context):
     df_hh_traces = pd.DataFrame()
     for elem in mapping_info:
         print(elem)
-        # TODO the end data is hardcoded.
+        # TODO the end date is hardcoded.
         if (elem[0] == 'GrandTotal') & (elem[1] <= datetime(2022, 4, 23).date()):
             week_ending = elem[1]
             week_starting = week_ending - timedelta(weeks=1)
@@ -66,7 +67,7 @@ def lambda_handler(event, context):
     df_hh_traces.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
-                       results_EAR_hh_traces_s3_pickle_path.format(run_id, job_id, run_id, job_id)).put(
+                       results_EAR_hh_traces_s3_pickle_path.format(run_id, job_id, job_id, run_id)).put(
         Body=csv_buffer.getvalue())
 
     # trigger the lambda to send emails
