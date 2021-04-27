@@ -46,6 +46,7 @@ def lambda_handler(event, context):
                    'end_year': end_year,
                    'end_month': end_month,
                    'end_day': end_day}
+        print('Invoking the lambda function of {}...Sim No. {}'.format(earning_at_risk_func_name, sim_index))
         client.invoke(
             FunctionName=earning_at_risk_func_name,
             InvocationType='Event',
@@ -57,6 +58,7 @@ def lambda_handler(event, context):
     payload = {'run_id': run_id,
                'sim_num': total_number_simulations,
                'job_id': job_id}
+    print('Invoking the lambda function of {}...'.format(check_ear_summary_output_func_name))
     client.invoke(
         FunctionName=check_ear_summary_output_func_name,
         InvocationType='Event',
