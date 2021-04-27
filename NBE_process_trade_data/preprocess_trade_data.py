@@ -37,8 +37,10 @@ def transform_format(job_id, date_input, filename, sheet_name,
     obj = s3.get_object(Bucket=bucket_nbe, Key=object_key)
     data = obj['Body'].read()
     df_all = pd.read_csv(io.BytesIO(data))
-    df_all['SettlementDate'] = df_all['SettlementDate'].apply(lambda x: x.to_pydatetime().date())
-    df_all['SettlementDateTime'] = df_all['SettlementDateTime'].apply(lambda x: x.to_pydatetime())
+    df_all['SettlementDate'] = \
+        df_all['SettlementDate'].apply(lambda x: datetime.datetime.strptime(x, "%Y-%m-%d").date())
+    df_all['SettlementDateTime'] = \
+        df_all['SettlementDateTime'].apply(lambda x: datetime.datetime.strptime(x, "%Y-%m-%d %H:%M"))
     df_output = pd.DataFrame()
     regions = list(set(df_all['TradingRegion']))
     for region in regions:
@@ -78,8 +80,8 @@ def transform_format(job_id, date_input, filename, sheet_name,
 
 if __name__ == "__main__":
     transform_format(job_id=41,
-                     date_input='2021-02-12',
-                     filename='Deal Capture (2021-01-14)_Job34.xlsx',
+                     date_input='2021-04-23',
+                     filename='DealCapture_SpotRun50015_Job41_2021-04-23_2022-04-23.csv',
                      sheet_name='Position Output',
                      start_year=2021, start_month=1, start_day=1,
-                     end_year=2022, end_month=2, end_day=15)
+                     end_year=2022, end_month=4, end_day=23)
