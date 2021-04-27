@@ -29,16 +29,17 @@ meter_data_simulation_s3_partition_path = \
 results_data_simulation_s3_pickle_path = 'results_period_def/{}/{}/{}.pickle'  # run_id, sim_index, distributor
 
 results_EAR_simulation_s3_pickle_path = 'EAR_output_by_sim/{}/{}/{}.pickle'  # run_id, job_id, sim_index
+results_EAR_week_summary_by_sim__path = 'EAR_output_summary_by_sim_by_week/{}/{}/'  # run_id, job_id
 results_EAR_week_summary_by_simulation_s3_pickle_path = 'EAR_output_summary_by_sim_by_week/{}/{}/{}.pickle'  # run_id, job_id, sim_index
 results_EAR_mth_summary_by_simulation_s3_pickle_path = 'EAR_output_summary_by_sim_by_mth/{}/{}/{}.pickle'  # run_id, job_id, sim_index
 results_EAR_qtr_summary_by_simulation_s3_pickle_path = 'EAR_output_summary_by_sim_by_qtr/{}/{}/{}.pickle'  # run_id, job_id, sim_index
 results_EAR_summary_mapping_s3_pickle_path = 'EAR_statistics/{}/{}/mapping.pickle'  # run_id, job_id
-results_EAR_normal_percentiles = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_normal_percentiles_{}_{}.csv'  # run_id, job_id
-results_EAR_PBI_percentiles = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_PBI_percentiles_{}_{}.csv'  # run_id, job_id
-results_EAR_hh_traces_s3_pickle_path = 'Outputs_PBI/{}/{}/HH_Simulation_Traces_{}_{}.csv'  # run_id, job_id
-results_by_sim_by_week = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_simulations_by_week_{}_{}.csv'  # run_id, job_id
-results_by_sim_by_month = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_simulations_by_month_{}_{}.csv'  # run_id, job_id
-results_by_sim_by_quarter = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_simulations_by_quarter_{}_{}.csv'  # run_id, job_id
+results_EAR_normal_percentiles = 'Outputs_PBI/{}/{}/EAR_Output_by_normal_percentiles_{}_{}.csv'  # run_id, job_id, job_id, run_id
+results_EAR_PBI_percentiles = 'Outputs_PBI/{}/{}/NBE_EAR_Output_by_PBI_percentiles_{}_{}.csv'  # run_id, job_id, job_id, run_id
+results_EAR_hh_traces_s3_pickle_path = 'Outputs_PBI/{}/{}/EAR_HH_Traces_{}_{}.csv'  # run_id, job_id, job_id, run_id
+results_by_sim_by_week = 'Outputs_PBI/{}/{}/EAR_Output_by_sim_by_week_for_CFD_impact_{}_{}.csv'  # run_id, job_id, job_id, run_id
+results_by_sim_by_month = 'Outputs_PBI/{}/{}/EAR_Output_by_sim_by_month_for_CFD_impact_{}_{}.csv'  # run_id, job_id, job_id, run_id
+results_by_sim_by_quarter = 'Outputs_PBI/{}/{}/EAR_Output_by_sim_by_quarter_for_CFD_impact_{}_{}.csv'  # run_id, job_id, job_id, run_id
 
 results_stress_test_by_sim_s3_pickle_path = 'stress_test_output_by_sim/{}/{}/{}.pickle'  # run_id, sim_index, target_state
 results_stress_test_summary_by_sim_s3_pickle_path = 'stress_test_output_summary_by_sim/{}/{}.pickle'  # run_id, sim_index

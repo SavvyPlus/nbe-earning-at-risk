@@ -2,7 +2,7 @@ import json
 import boto3
 import time
 import os
-from config import bucket_nbe
+from config import bucket_nbe, results_EAR_week_summary_by_sim__path
 
 get_percentile_func_name = os.environ['GetPercentileOutputsFunc']
 
@@ -20,7 +20,7 @@ def lambda_handler(event, context):
 
     for i in range(retry):
         print(f"Retry {i}:")
-        files_path = 'EAR_output_summary_by_sim/{}/{}/'.format(run_id, job_id)  # run_id, job_id
+        files_path = results_EAR_week_summary_by_sim__path.format(run_id, job_id)  # run_id, job_id
 
         bucket = s3.Bucket(bucket_nbe)
         key_lst = []
