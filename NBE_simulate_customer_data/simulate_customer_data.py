@@ -18,14 +18,14 @@ def simulate_demand_profile(key_name):
     distributor = key_name.split('/')[2].split('.')[0]
 
     # get reference day parameters from Spot Simulations
-    object_key = spot_simulation_input_extra_info.format(run_id)
-    s3 = boto3.client('s3')
-    obj = s3.get_object(Bucket=bucket_nbe, Key=object_key)
-    data = obj['Body'].read()
-    extra_sim_mapping = pd.read_excel(io.BytesIO(data))
-    # extra_sim_mapping = pd.read_excel('../input/mapping.xlsx')
-    extra_sim_mapping['original_sim'] = (extra_sim_mapping[1] / 9).astype('int')
-    extra_sims = extra_sim_mapping[['original_sim', 3]].to_dict(orient='split')['data']
+    # object_key = spot_simulation_input_extra_info.format(run_id)
+    # s3 = boto3.client('s3')
+    # obj = s3.get_object(Bucket=bucket_nbe, Key=object_key)
+    # data = obj['Body'].read()
+    # extra_sim_mapping = pd.read_excel(io.BytesIO(data))
+    # # extra_sim_mapping = pd.read_excel('../input/mapping.xlsx')
+    # extra_sim_mapping['original_sim'] = (extra_sim_mapping[1] / 9).astype('int')
+    # extra_sims = extra_sim_mapping[['original_sim', 3]].to_dict(orient='split')['data']
     params = read_pickle_from_s3(bucket_spot_simulation, parameters_for_batch_v2.format(run_id))
 
     meter_data_dic = read_pickle_from_s3(bucket_nbe, meter_data_pickle_path.format(region, distributor))
@@ -39,12 +39,12 @@ def simulate_demand_profile(key_name):
         write_pickle_to_s3(sim_meter_data, bucket_nbe,
                            meter_data_simulation_s3_pickle_path.format(run_id, sim_i, distributor))
         print(sim_i)
-        for extra in extra_sims:
-            if sim_i == extra[0]:
-                sim_i_new = extra[1]
-                write_pickle_to_s3(sim_meter_data, bucket_nbe,
-                                   meter_data_simulation_s3_pickle_path.format(run_id, sim_i_new, distributor))
-                print(sim_i_new)
+        # for extra in extra_sims:
+        #     if sim_i == extra[0]:
+        #         sim_i_new = extra[1]
+        #         write_pickle_to_s3(sim_meter_data, bucket_nbe,
+        #                            meter_data_simulation_s3_pickle_path.format(run_id, sim_i_new, distributor))
+        #         print(sim_i_new)
 
 
 if __name__ == '__main__':
