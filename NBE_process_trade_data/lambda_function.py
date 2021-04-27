@@ -4,7 +4,7 @@ import os
 from preprocess_trade_data import transform_format
 
 # TODO
-total_number_simulations = 930
+total_number_simulations = 900
 client = boto3.client('lambda')
 earning_at_risk_func_name = os.environ['EarningAtRiskFunc']
 check_ear_summary_output_func_name = os.environ['CheckEARSummaryOutputFunc']
@@ -18,7 +18,7 @@ def lambda_handler(event, context):
     job_id = int(key_name.split('/')[1].split('.')[0].split('_')[2][3:])
     date_input = key_name.split('/')[1].split('.')[0].split('_')[3]
     filename = key_name.split('/')[1]
-    sheet_name = 'Position Output'
+    sheet_name = 'Position_Output'
     start_year = 2021
     start_month = 1
     start_day = 1

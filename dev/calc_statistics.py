@@ -4,7 +4,7 @@ import boto3
 import json
 from utils import read_pickle_from_s3, write_pickle_to_s3
 from config import bucket_nbe, results_EAR_simulation_s3_pickle_path, \
-    results_EAR_summary_by_simulation_s3_pickle_path, results_EAR_summary_mapping_s3_pickle_path, \
+    results_EAR_week_summary_by_simulation_s3_pickle_path, results_EAR_summary_mapping_s3_pickle_path, \
     results_EAR_hh_traces_s3_pickle_path, results_EAR_normal_percentiles, results_EAR_PBI_percentiles, \
     results_EAR_mth_summary_by_simulation_s3_pickle_path, results_EAR_qtr_summary_by_simulation_s3_pickle_path, \
     results_by_sim_by_week, results_by_sim_by_month, results_by_sim_by_quarter
@@ -13,31 +13,36 @@ from io import BytesIO, StringIO
 
 
 def get_output(run_id, job_id, sim_num):
-    print("loading data of all simulations.")
+    # output by simulation - weekly
+    print("loading data of all simulations by week.")
     df_all_sim = pd.DataFrame()
     for i in range(sim_num):
         if i < 900:
-            df_tmp = read_pickle_from_s3(bucket_nbe,
-                                         results_EAR_summary_by_simulation_s3_pickle_path.format(run_id, job_id, i))
+            df_tmp = \
+                read_pickle_from_s3(bucket_nbe,
+                                    results_EAR_week_summary_by_simulation_s3_pickle_path.format(run_id, job_id, i))
         else:
-            df_tmp = read_pickle_from_s3(bucket_nbe,
-                                         results_EAR_summary_by_simulation_s3_pickle_path.format(run_id, job_id,
+            df_tmp = \
+                read_pickle_from_s3(bucket_nbe,
+                                    results_EAR_week_summary_by_simulation_s3_pickle_path.format(run_id,
+                                                                                                 job_id,
                                                                                                  900 + (i - 900) * 9))
         df_all_sim = df_all_sim.append(df_tmp)
         print(i)
-    # output by simulation
     df_all_sim['Spot Run No.'] = run_id
     df_all_sim['Job No.'] = job_id
-    df_all_sim['Year'] = df_all_sim['WeekEnding'].apply(lambda x: x.year)
-    df_all_sim['Month'] = df_all_sim['WeekEnding'].apply(lambda x: x.month)
-    # df_all_sim.to_excel('NBE_EAR_Output_by_simulations_by_week_{}.xlsx'.format(run_id))
-    # df_all_sim.to_csv('NBE_EAR_Output_by_simulations_by_week_{}_{}.csv'.format(run_id, job_id))
+    df_all_sim_week = df_all_sim[
+        ['TradingRegion', 'WeekEnding', 'Total Cost (Incl Cap)', 'Transfer Cost', 'Wholesale Margin', 'SimNo',
+         'Spot Run No.', 'Job No.']]
+    df_all_sim_week.reset_index(inplace=True)
+    df_all_sim_week = df_all_sim_week.rename(columns={'index': 'CaseNo'})
     csv_buffer = StringIO()
-    df_all_sim.to_csv(csv_buffer)
+    df_all_sim_week.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
                        results_by_sim_by_week.format(run_id, job_id, run_id, job_id)).put(Body=csv_buffer.getvalue())
-    # monthly
+
+    # output by simulation - monthly
     print("loading data of all simulations by month.")
     df_all_sim_month = pd.DataFrame()
     for i in range(sim_num):
@@ -51,16 +56,20 @@ def get_output(run_id, job_id, sim_num):
                                                                                                      900+(i - 900) * 9))
         df_all_sim_month = df_all_sim_month.append(df_tmp)
         print(i)
-    # output by simulation
     df_all_sim_month['Spot Run No.'] = run_id
     df_all_sim_month['Job No.'] = job_id
-    # df_all_sim_month.to_excel('NBE_EAR_Output_by_simulations_by_month_{}.xlsx'.format(run_id))
+    df_all_sim_month.reset_index(inplace=True)
+    df_all_sim_month = df_all_sim_month.rename(columns={'index': 'CaseNo'})
+    df_all_sim_month = df_all_sim_month[
+        ['CaseNo', 'TradingRegion', 'MonthEnding', 'Total Cost (Incl Cap)', 'Transfer Cost', 'Wholesale Margin',
+         'SimNo', 'Spot Run No.', 'Job No.']]
     csv_buffer = StringIO()
-    df_all_sim_month.to_csv(csv_buffer)
+    df_all_sim_month.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
                        results_by_sim_by_month.format(run_id, job_id, run_id, job_id)).put(Body=csv_buffer.getvalue())
-    # quarterly
+
+    # output by simulation - quarterly
     print("loading data of all simulations by quarter.")
     df_all_sim_qtr = pd.DataFrame()
     for i in range(sim_num):
@@ -74,12 +83,15 @@ def get_output(run_id, job_id, sim_num):
                                                                                                      900+(i - 900) * 9))
         df_all_sim_qtr = df_all_sim_qtr.append(df_tmp)
         print(i)
-    # output by simulation
     df_all_sim_qtr['Spot Run No.'] = run_id
     df_all_sim_qtr['Job No.'] = job_id
-    # df_all_sim_qtr.to_excel('NBE_EAR_Output_by_simulations_by_quarter_{}.xlsx'.format(run_id))
+    df_all_sim_qtr.reset_index(inplace=True)
+    df_all_sim_qtr = df_all_sim_qtr.rename(columns={'index': 'CaseNo'})
+    df_all_sim_qtr = df_all_sim_qtr[
+        ['CaseNo', 'TradingRegion', 'QuarterEnding', 'Total Cost (Incl Cap)', 'Transfer Cost', 'Wholesale Margin',
+         'SimNo', 'Spot Run No.', 'Job No.']]
     csv_buffer = StringIO()
-    df_all_sim_qtr.to_csv(csv_buffer)
+    df_all_sim_qtr.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
                        results_by_sim_by_quarter.format(run_id, job_id, run_id, job_id)).put(Body=csv_buffer.getvalue())
@@ -127,18 +139,21 @@ def get_output(run_id, job_id, sim_num):
                                                               'SimNo. (based on Wholesale Margin)'])
     df_percentile_update['Spot Run No.'] = run_id
     df_percentile_update['Job No.'] = job_id
+    df_percentile_update.reset_index(inplace=True)
+    df_percentile_update = df_percentile_update.rename(columns={'index': 'Case'})
     # df_percentile_update['Year'] = df_percentile_update['WeekEnding'].apply(lambda x: x.year)
     # df_percentile_update['Month'] = df_percentile_update['WeekEnding'].apply(lambda x: x.month)
     # df_percentile_update.to_excel('NBE_EAR_Output_by_normal_percentiles_{}_{}.xlsx'.format(run_id, job_id))
     # df_percentile_update.to_csv(results_EAR_normal_percentiles.format(run_id, job_id))
     csv_buffer = StringIO()
-    df_percentile_update.to_csv(csv_buffer)
+    df_percentile_update.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
                        results_EAR_normal_percentiles.format(run_id, job_id,
                                                              run_id, job_id)).put(Body=csv_buffer.getvalue())
 
-    # output by percentile for PBI
+    # output by risk percentiles for PBI
+    '''
     percentile_list_risk = [0, 0.01, 0.02, 0.03, 0.05]
     df_percentile_risk = df_all_sim[['TradingRegion', 'WeekEnding', 'Swap Hedged Qty (MWh)', 'Cap Hedged Qty (MWh)',
                                      'Customer Net MWh', 'Pool Cost', 'Swap Cfd', 'Cap Cfd', 'Total Cost (excl GST)',
@@ -170,6 +185,7 @@ def get_output(run_id, job_id, sim_num):
     s3_resource.Object(bucket_nbe,
                        results_EAR_PBI_percentiles.format(run_id, job_id,
                                                           run_id, job_id)).put(Body=csv_buffer.getvalue())
+    '''
 
 
 def duplicate_percentile_for_pbi(input_lst, p_position):
@@ -209,12 +225,13 @@ def capture_sim_no_for_percentile(original_df, input_df):
 
 
 def get_hh_traces(run_id, job_id):
+    # TODO this function is outdated.
     mapping_info = read_pickle_from_s3(bucket_nbe,
                                        results_EAR_summary_mapping_s3_pickle_path.format(run_id, job_id))
     df_hh_traces = pd.DataFrame()
     for elem in mapping_info:
         print(elem)
-        if (elem[0] == 'GrandTotal') & (elem[1] <= datetime(2022, 1, 1).date()):
+        if (elem[0] == 'GrandTotal') & (elem[1] <= datetime(2022, 4, 23).date()):
             week_ending = elem[1]
             week_starting = week_ending - timedelta(weeks=1)
             p = elem[2]
@@ -261,5 +278,5 @@ def get_four_week_blocks(d, *args):
 if __name__ == '__main__':
     runid = 50014
     job_id = 40
-    get_output(runid, job_id, 930)
-    # get_hh_traces(runid, job_id)
+    # get_output(runid, job_id, 930)
+    get_hh_traces(runid, job_id)

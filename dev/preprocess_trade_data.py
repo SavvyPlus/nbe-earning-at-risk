@@ -36,7 +36,7 @@ def transform_format(job_id, date_input, filename, sheet_name,
     s3 = boto3.client('s3')
     obj = s3.get_object(Bucket=bucket_nbe, Key=object_key)
     data = obj['Body'].read()
-    df_all = pd.read_excel(io.BytesIO(data), sheet_name=sheet_name)
+    df_all = pd.read_csv(io.BytesIO(data), sheet_name=sheet_name)
     df_all['SettlementDate'] = df_all['SettlementDate'].apply(lambda x: x.to_pydatetime().date())
     df_all['SettlementDateTime'] = df_all['SettlementDateTime'].apply(lambda x: x.to_pydatetime())
     df_output = pd.DataFrame()
@@ -77,7 +77,7 @@ def transform_format(job_id, date_input, filename, sheet_name,
 
 
 if __name__ == "__main__":
-    transform_format(job_id=34,
+    transform_format(job_id=41,
                      date_input='2021-02-12',
                      filename='Deal Capture (2021-01-14)_Job34.xlsx',
                      sheet_name='Position Output',

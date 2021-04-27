@@ -3,8 +3,7 @@ import numpy as np
 import boto3
 import json
 from utils import read_pickle_from_s3, write_pickle_to_s3
-from config import bucket_nbe, results_EAR_simulation_s3_pickle_path, \
-    results_EAR_summary_by_simulation_s3_pickle_path, results_EAR_summary_mapping_s3_pickle_path, \
+from config import bucket_nbe, results_EAR_simulation_s3_pickle_path, results_EAR_summary_mapping_s3_pickle_path, \
     results_EAR_hh_traces_s3_pickle_path
 from datetime import datetime, timedelta
 from io import BytesIO, StringIO
@@ -28,7 +27,8 @@ def lambda_handler(event, context):
     df_hh_traces = pd.DataFrame()
     for elem in mapping_info:
         print(elem)
-        if (elem[0] == 'GrandTotal') & (elem[1] <= datetime(2022, 3, 19).date()):
+        # TODO the end data is hardcoded.
+        if (elem[0] == 'GrandTotal') & (elem[1] <= datetime(2022, 4, 23).date()):
             week_ending = elem[1]
             week_starting = week_ending - timedelta(weeks=1)
             p = elem[2]
@@ -58,10 +58,12 @@ def lambda_handler(event, context):
             continue
     df_hh_traces['Spot Run No.'] = run_id
     df_hh_traces['Job No.'] = job_id
+    df_hh_traces.reset_index(inplace=True)
+    df_hh_traces = df_hh_traces.rename(columns={'index': 'Case'})
     # df_hh_traces.csv('HH_Simulation_Traces_{}.csv'.format(run_id))
     # write_pickle_to_s3(df_hh_traces, project_bucket, results_EAR_hh_traces_s3_pickle_path.format(run_id, job_id))
     csv_buffer = StringIO()
-    df_hh_traces.to_csv(csv_buffer)
+    df_hh_traces.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
                        results_EAR_hh_traces_s3_pickle_path.format(run_id, job_id, run_id, job_id)).put(
