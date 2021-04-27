@@ -35,12 +35,12 @@ def get_output(run_id, job_id, sim_num):
         ['TradingRegion', 'WeekEnding', 'Total Cost (Incl Cap)', 'Transfer Cost', 'Wholesale Margin', 'SimNo',
          'Spot Run No.', 'Job No.']]
     df_all_sim_week.reset_index(inplace=True)
-    df_all_sim_week = df_all_sim_week.rename(columns={'index': 'CaseNo'})
+    df_all_sim_week = df_all_sim_week.rename(columns={'index': 'Case'})
     csv_buffer = StringIO()
     df_all_sim_week.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
-                       results_by_sim_by_week.format(run_id, job_id, run_id, job_id)).put(Body=csv_buffer.getvalue())
+                       results_by_sim_by_week.format(run_id, job_id, job_id, run_id)).put(Body=csv_buffer.getvalue())
 
     # output by simulation - monthly
     print("loading data of all simulations by month.")
@@ -59,15 +59,15 @@ def get_output(run_id, job_id, sim_num):
     df_all_sim_month['Spot Run No.'] = run_id
     df_all_sim_month['Job No.'] = job_id
     df_all_sim_month.reset_index(inplace=True)
-    df_all_sim_month = df_all_sim_month.rename(columns={'index': 'CaseNo'})
+    df_all_sim_month = df_all_sim_month.rename(columns={'index': 'Case'})
     df_all_sim_month = df_all_sim_month[
-        ['CaseNo', 'TradingRegion', 'MonthEnding', 'Total Cost (Incl Cap)', 'Transfer Cost', 'Wholesale Margin',
+        ['Case', 'TradingRegion', 'MonthEnding', 'Total Cost (Incl Cap)', 'Transfer Cost', 'Wholesale Margin',
          'SimNo', 'Spot Run No.', 'Job No.']]
     csv_buffer = StringIO()
     df_all_sim_month.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
-                       results_by_sim_by_month.format(run_id, job_id, run_id, job_id)).put(Body=csv_buffer.getvalue())
+                       results_by_sim_by_month.format(run_id, job_id, job_id, run_id)).put(Body=csv_buffer.getvalue())
 
     # output by simulation - quarterly
     print("loading data of all simulations by quarter.")
@@ -86,15 +86,15 @@ def get_output(run_id, job_id, sim_num):
     df_all_sim_qtr['Spot Run No.'] = run_id
     df_all_sim_qtr['Job No.'] = job_id
     df_all_sim_qtr.reset_index(inplace=True)
-    df_all_sim_qtr = df_all_sim_qtr.rename(columns={'index': 'CaseNo'})
+    df_all_sim_qtr = df_all_sim_qtr.rename(columns={'index': 'Case'})
     df_all_sim_qtr = df_all_sim_qtr[
-        ['CaseNo', 'TradingRegion', 'QuarterEnding', 'Total Cost (Incl Cap)', 'Transfer Cost', 'Wholesale Margin',
+        ['Case', 'TradingRegion', 'QuarterEnding', 'Total Cost (Incl Cap)', 'Transfer Cost', 'Wholesale Margin',
          'SimNo', 'Spot Run No.', 'Job No.']]
     csv_buffer = StringIO()
     df_all_sim_qtr.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
-                       results_by_sim_by_quarter.format(run_id, job_id, run_id, job_id)).put(Body=csv_buffer.getvalue())
+                       results_by_sim_by_quarter.format(run_id, job_id, job_id, run_id)).put(Body=csv_buffer.getvalue())
 
     # save the mapping of percentile & sim_index of all percentiles
     percentile_list = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.25, 0.5, 0.75, 0.95, 1]
@@ -149,8 +149,8 @@ def get_output(run_id, job_id, sim_num):
     df_percentile_update.to_csv(csv_buffer, index=False)
     s3_resource = boto3.resource('s3')
     s3_resource.Object(bucket_nbe,
-                       results_EAR_normal_percentiles.format(run_id, job_id,
-                                                             run_id, job_id)).put(Body=csv_buffer.getvalue())
+                       results_EAR_normal_percentiles.format(run_id, job_id, job_id,
+                                                             run_id)).put(Body=csv_buffer.getvalue())
 
     # output by risk percentiles for PBI
     '''

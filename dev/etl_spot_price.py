@@ -75,7 +75,7 @@ if __name__ == "__main__":
     for sim_index in range(sim_no):
         if sim_index >= 900:
             sim_index = 900 + (sim_index - 900) * 9
-        payload = {'run_id': '50014',
+        payload = {'run_id': '50015',
                    'sim_index': sim_index}
         client.invoke(
             FunctionName='nbe_merge_spot_temp',
