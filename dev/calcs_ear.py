@@ -3,7 +3,7 @@ from datetime import timedelta, date
 import calendar
 from config import bucket_nbe, deal_capture_input_path, deal_capture_converted_path, \
     spot_price_by_sim_parquet_path, meter_data_simulation_s3_pickle_path, results_EAR_simulation_s3_pickle_path, \
-    results_EAR_summary_by_simulation_s3_pickle_path, results_EAR_mth_summary_by_simulation_s3_pickle_path, \
+    results_EAR_week_summary_by_simulation_s3_pickle_path, results_EAR_mth_summary_by_simulation_s3_pickle_path, \
     results_EAR_qtr_summary_by_simulation_s3_pickle_path
 from utils import write_pickle_to_s3, read_pickle_from_s3
 import pandas as pd
@@ -104,7 +104,7 @@ def load_calculate_summarize(run_id, job_id, date_input, sim_index,
     print('Uploading weekly summary... {} SimNo. {}'.format(run_id, sim_index))
     write_pickle_to_s3(df_summarized,
                        bucket_nbe,
-                       results_EAR_summary_by_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
+                       results_EAR_week_summary_by_simulation_s3_pickle_path.format(run_id, job_id, sim_index))
 
     # TODO
     # monthly summary
