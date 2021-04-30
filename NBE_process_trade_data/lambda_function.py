@@ -8,6 +8,7 @@ total_number_simulations = 900
 client = boto3.client('lambda')
 earning_at_risk_func_name = os.environ['EarningAtRiskFunc']
 check_ear_summary_output_func_name = os.environ['CheckEARSummaryOutputFunc']
+avg_price_by_profile_func_name = 'nbe_avg_price_by_profile'
 
 
 def lambda_handler(event, context):
@@ -32,6 +33,23 @@ def lambda_handler(event, context):
                      sheet_name,
                      start_year, start_month, start_day,
                      end_year, end_month, end_day)
+    # trigger the average price by profile calculation lambda
+    for sim_index in range(total_number_simulations):
+        if sim_index >= 900:
+            sim_index = 900 + (sim_index - 900) * 9
+        payload = {'run_id': run_id,
+                   'sim_index': sim_index,
+                   'job_id': job_id,
+                   'start_date': [2021, 1, 1],
+                   'end_date': [end_year, end_month, end_day]
+                   }
+        print('Invoking the lambda function of {}...Sim No. {}'.format(avg_price_by_profile_func_name, sim_index))
+        client.invoke(
+            FunctionName=avg_price_by_profile_func_name,
+            InvocationType='Event',
+            LogType='Tail',
+            Payload=json.dumps(payload),
+        )
     # trigger the NBE earning at risk calculation lambda
     for sim_index in range(total_number_simulations):
         if sim_index >= 900:

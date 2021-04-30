@@ -11,6 +11,7 @@ ln -f dev/config.py NBE_check_ear_summary_output_by_sim/config.py
 mkdir -p NBE_EAR_HH_Traces/
 ln -f dev/config.py NBE_EAR_HH_Traces/config.py
 ln -f dev/utils.py NBE_EAR_HH_Traces/utils.py
+ln -f dev/calc_hh_traces.py NBE_EAR_HH_Traces/calc_hh_traces.py
 
 # NBE_EarningAtRisk
 mkdir -p NBE_EarningAtRisk/

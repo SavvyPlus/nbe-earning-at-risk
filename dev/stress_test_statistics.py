@@ -150,9 +150,9 @@ def get_hh_traces_stress_test(run_id, region):
 
 
 if __name__ == '__main__':
-    runid = 50014
-    job_id = 39
-    sim_num = 930
+    runid = 50015
+    job_id = 41
+    sim_num = 900
 
     # for i in range(sim_num):
     #     if i < 900:
@@ -162,13 +162,13 @@ if __name__ == '__main__':
     #     print(i)
 
     # function_name = 'NBE_StressTest_Summary_by_Sim'
-    # sim_num = 930
+    # # sim_num = 900
     # client = boto3.client('lambda')
     # for i in range(sim_num):
     #     if i >= 900:
     #         i = 900 + (i - 900) * 9
     #     payload = {
-    #         "run_id": "50014",
+    #         "run_id": "50015",
     #         "sim_index": i
     #     }
     #     client.invoke(

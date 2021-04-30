@@ -7,4 +7,4 @@
 #  6. need to review the stress test,
 #  lambda functions: NBE_stress_test & nbe_stress_test_merger & NBE_StressTest_Summary_by_Sim
 #  7. stress test, start date and end date, there are errors.
-#  8.
+#  8. need to review the average price by profile
