@@ -164,7 +164,7 @@ def lambda_handler(event, context):
     # output_key = f'projects/NextBusinessEnergy/stress_test_output_by_sim/{run_id}/{sim_index}/{target_state}.pickle'
 
     start_date = datetime.date(2021, 1, 1)
-    end_date = datetime.date(2022, 3, 20)  # incl.
+    end_date = datetime.date(2022, 4, 17)  # incl.
 
     # read deal position data
     df_all = read_pickle_from_s3(bucket, deal_capture_key)
@@ -214,30 +214,30 @@ def lambda_handler(event, context):
 if __name__ == "__main__":
     # starttime = time.time()
     # event = {
-    #     "run_id": "50014",
+    #     "run_id": "50015",
     #     "sim_index": 0,
     #     "target_state": 'VIC1',
     #     "prod_mode": True,
-    #     "job_id": 39,
-    #     "date_input": '2021-03-26'
+    #     "job_id": 41,
+    #     "date_input": '2021-04-23'
     # }
     # lambda_handler(event, None)
     # endtime = time.time()
     # print('\nTotal time: %.2f seconds.' % (endtime - starttime))
 
     function_name = 'NBE_stress_test'
-    sim_num = 930
+    sim_num = 900
     client = boto3.client('lambda')
     for i in range(sim_num):
         if i >= 900:
             i = 900 + (i - 900) * 9
         payload = {
-            "run_id": "50014",
+            "run_id": "50015",
             "sim_index": i,
-            "target_state": 'QLD1',
+            "target_state": 'VIC1',
             "prod_mode": True,
-            "job_id": 39,
-            "date_input": '2021-03-26'
+            "job_id": 41,
+            "date_input": '2021-04-23'
         }
         client.invoke(
             FunctionName=function_name,

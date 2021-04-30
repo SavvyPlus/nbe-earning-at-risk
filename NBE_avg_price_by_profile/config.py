@@ -19,9 +19,6 @@ deal_capture_converted_path = 'deal_capture/Job_{}_{}.pickle'  # Job No., Date
 spot_price_by_sim_parquet_path = 'spot_price_by_sim/{}/{}.parquet'  # run_id, sim_index
 spot_price_by_sim_csv_path = 'spot_price_by_sim/{}/{}.csv'  # run_id, sim_index
 
-period_definition_path = 'period_definition.parquet'
-profile_mapping_path = 'profile_id_mapping.parquet'
-
 meter_data_file_path = 'meter_data_input/{}'  # filename
 meter_data_info_path = 'meter_data_info.pickle'
 meter_data_pickle_path = 'meter-data-history-pickle/{}/{}.pickle'  # region, distributor
@@ -31,10 +28,9 @@ meter_data_simulation_s3_partition_path = \
 
 results_data_simulation_s3_pickle_path = 'results_period_def/{}/{}/{}.pickle'  # run_id, sim_index, distributor
 
-results_avg_price_by_profile_by_sim_path = 'avg_price_by_profile_by_sim_by_{}/{}/{}/{}.pickle'  # week/month/quarter, job_id, run_id, sim_index
-results_avg_price_by_profile_by_sim_csv_path = 'Outputs_PBI/{}/{}/spot_price_cap_payouts_by_{}_{}_{}.csv'  # job_id, run_id, week/month/quarter, job_id, run_id
 results_EAR_simulation_s3_pickle_path = 'EAR_output_by_sim/{}/{}/{}.pickle'  # run_id, job_id, sim_index
-results_EAR_week_summary_by_simulation_s3_pickle_path = 'EAR_output_summary_by_sim_by_week/{}/{}/{}.pickle'  # run_id, job_id, sim_index
+results_EAR_week_summary_by_sim__path = 'EAR_output_summary_by_sim_by_week/{}/{}/'  # run_id, job_id
+results_EAR_week_summary_by_simulation_s3_pickle_path = 'EAR_output_summary_by_sim/{}/{}/{}.pickle'  # run_id, job_id, sim_index
 results_EAR_mth_summary_by_simulation_s3_pickle_path = 'EAR_output_summary_by_sim_by_mth/{}/{}/{}.pickle'  # run_id, job_id, sim_index
 results_EAR_qtr_summary_by_simulation_s3_pickle_path = 'EAR_output_summary_by_sim_by_qtr/{}/{}/{}.pickle'  # run_id, job_id, sim_index
 results_EAR_summary_mapping_s3_pickle_path = 'EAR_statistics/{}/{}/mapping.pickle'  # job_id, run_id

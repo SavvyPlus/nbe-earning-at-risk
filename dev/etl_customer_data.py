@@ -1,3 +1,5 @@
+# TODO: needs automation
+
 import pandas as pd
 from utils import read_pickle_from_s3, write_pickle_to_s3, put_object_to_s3
 from config import bucket_spot_simulation, bucket_nbe, meter_data_simulation_s3_pickle_path, \
@@ -64,7 +66,7 @@ if __name__ == '__main__':
     client = boto3.client('lambda')
     for i in range(900):
         function_name = 'NBE_customer_data_partition'
-        payload = {'run_id': 50014,
+        payload = {'run_id': 50015,
                    'sim_index': i}
         client.invoke(
             FunctionName=function_name,

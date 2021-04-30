@@ -12,12 +12,12 @@ def lambda_handler(event, context):
     interval = 60
     for i in range(retry):
         s3 = boto3.resource('s3')
-        files_path = 'Outputs_PBI/{}/{}/'.format(run_id, job_id)  # run_id, job_id
+        files_path = 'Outputs_PBI/{}/{}/'.format(job_id, run_id)  # job_id, run_id
         bucket = s3.Bucket(bucket_nbe)
         key_lst = []
         for object_summary in bucket.objects.filter(Prefix=files_path):
             key_lst.append(object_summary)
-        if len(key_lst) == 3:
+        if len(key_lst) == 11:
             print('Sending emails...')
             SENDER = "weiliang.zhou@zawee.work"
             RECIPIENT = ["weiliang.zhou@zawee.work"]
